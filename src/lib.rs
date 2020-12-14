@@ -76,7 +76,7 @@ macro_rules! conv_err {
 
 pub type ConvertResult<T> = Result<T, ConvertError>;
 
-pub type OsResult<T> = Result<T, u32>;
+pub(crate) type OsResult<T> = Result<T, u32>;
 
 #[inline(always)]
 #[allow(non_snake_case)]
