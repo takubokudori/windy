@@ -2,17 +2,17 @@
 // This source code is licensed under the MIT or Apache-2.0 license.
 use crate::*;
 use std::cmp::Ordering;
-use std::ops;
 use std::convert::TryFrom;
 use std::fmt::Write;
+use std::ops;
 
 const CP_ACP: UINT = 0;
 const CP_UTF8: UINT = 65001;
 const MB_ERR_INVALID_CHARS: DWORD = 0x8;
 const WC_ERR_INVALID_CHARS: DWORD = 0x80;
 const WC_NO_BEST_FIT_CHARS: DWORD = 0x400;
-const ERROR_NO_UNICODE_TRANSLATION: DWORD = 0x459;
 const ERROR_INSUFFICIENT_BUFFER: DWORD = 0x7a;
+const ERROR_NO_UNICODE_TRANSLATION: DWORD = 0x459;
 
 macro_rules! str_impl_debug {
     ($x:ident) => (

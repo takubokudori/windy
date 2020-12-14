@@ -1,8 +1,8 @@
 // Copyright takubokudori.
 // This source code is licensed under the MIT or Apache-2.0 license.
 use criterion::{criterion_group, criterion_main, Criterion};
-use windy::*;
 use std::convert::TryFrom;
+use windy::*;
 
 fn bench_utf8_to_unicode(c: &mut Criterion) {
     c.bench_function("UTF-8 to Unicode", |b| b.iter(|| {
