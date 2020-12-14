@@ -63,6 +63,7 @@ pub mod tests {
     #[test]
     fn test_string_conversion() {
         // UTF-8 -> ANSI
+        let _ = AString::from_str_lossy("スペシャル").to_string_lossy();
         let sa = AString::try_from("test").unwrap();
         assert_eq!("test", sa.to_string().unwrap());  // ANSI -> UTF-8
         assert_eq!("test", sa.to_string_lossy()); // ANSI -> UTF-8 lossy
@@ -87,11 +88,11 @@ pub mod tests {
     #[test]
     fn test_string_conversion_invalid() {
         // UTF-8 -> ANSI (Invalid)
-        assert_eq!(Err(conv_err!(@ansi ERROR_NO_UNICODE_TRANSLATION)), AString::try_from("testテスト🍣"));
+        assert_eq!(Err(conv_err!(@ansi ERROR_NO_UNICODE_TRANSLATION)), AString::try_from("スペシャルtest🍣"));
         // UTF-8 -> Unicode
-        let sw = WString::try_from("testテスト🍣").unwrap();
-        assert_eq!("testテスト🍣", sw.to_string().unwrap()); // Unicode -> UTF-8
-        assert_eq!("testテスト🍣", sw.to_string_lossy()); // Unicode -> UTF-8 lossy
+        let sw = WString::try_from("スペシャルtest🍣").unwrap();
+        assert_eq!("スペシャルtest🍣", sw.to_string().unwrap()); // Unicode -> UTF-8
+        assert_eq!("スペシャルtest🍣", sw.to_string_lossy()); // Unicode -> UTF-8 lossy
         // Unicode -> ANSI (Invalid)
         assert_eq!(Err(conv_err!(@ansi ERROR_NO_UNICODE_TRANSLATION)), sw.to_astring());
         let _ = sw.to_astring_lossy().to_string_lossy();

@@ -33,7 +33,7 @@ fn wide_char_to_multi_byte_wrap(
     used_default_char: bool,
 ) -> OsResult<Vec<u8>>
 {
-    let l = x.len() * 2;
+    let l = x.len() * 4;
     let mut ret: Vec<u8> = Vec::with_capacity(l);
     unsafe { ret.set_len(l); }
     let mut udc_flag = false;
@@ -55,7 +55,10 @@ fn wide_char_to_multi_byte_wrap(
             Ok(ret)
         }
         Err(ERROR_INSUFFICIENT_BUFFER) => {
-            println!("WCTMB: ERROR_INSUFFICIENT_BUFFER returned"); // for debug
+            #[cfg(feature = "debug_insufficient_buffer")]
+                {
+                    println!("WCTMB: ERROR_INSUFFICIENT_BUFFER returned"); // for debug
+                }
             wide_char_to_multi_byte2(code_page, wc_flags, x, used_default_char)
         }
         Err(x) => Err(x),
@@ -119,7 +122,10 @@ fn multi_byte_to_wide_char_wrap(
             Ok(ret)
         }
         Err(ERROR_INSUFFICIENT_BUFFER) => {
-            println!("MBTWC: ERROR_INSUFFICIENT_BUFFER returned"); // for debug
+            #[cfg(feature = "debug_insufficient_buffer")]
+                {
+                    println!("MBTWC: ERROR_INSUFFICIENT_BUFFER returned"); // for debug
+                }
             multi_byte_to_wide_char2(code_page, mb_flags, x)
         }
         Err(x) => Err(x),

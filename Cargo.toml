@@ -2,7 +2,7 @@
 name = "windy"
 version = "0.1.0"
 authors = ["takubokudori <takubokudori@gmail.com>"]
-license = "MIT or Apache-2.0"
+license = "MIT OR Apache-2.0"
 homepage = "https://github.com/takubokudori/windy"
 repository = "https://github.com/takubokudori/windy"
 keywords = ["Windows", "ANSI", "Unicode", "Multi-byte"]
@@ -24,3 +24,6 @@ criterion = "0.3"
 [[bench]]
 name = "string"
 harness = false
+
+[features]
+debug_insufficient_buffer = []
