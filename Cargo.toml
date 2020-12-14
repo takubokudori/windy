@@ -1,0 +1,26 @@
+[package]
+name = "windy"
+version = "0.1.0"
+authors = ["takubokudori <takubokudori@gmail.com>"]
+license = "MIT or Apache-2.0"
+homepage = "https://github.com/takubokudori/windy"
+repository = "https://github.com/takubokudori/windy"
+keywords = ["Windows", "ANSI", "Unicode", "Multi-byte"]
+description = "Windows strings library"
+readme = "README.md"
+edition = "2018"
+
+exclude = [
+    ".gitignore",
+    "examples/**",
+]
+
+[package.metadata.docs.rs]
+default-target = "x86_64-pc-windows-msvc"
+
+[dev-dependencies]
+criterion = "0.3"
+
+[[bench]]
+name = "string"
+harness = false
