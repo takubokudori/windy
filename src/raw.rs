@@ -1,5 +1,5 @@
 // Copyright takubokudori.
-// This source code is licensed under the MIT or Apache-2 license.
+// This source code is licensed under the MIT or Apache-2.0 license.
 pub(crate) use std::os::raw::{c_int, c_uint, c_ulong, c_char};
 
 #[allow(non_camel_case_types)]
