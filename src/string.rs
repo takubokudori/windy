@@ -33,6 +33,7 @@ fn wide_char_to_multi_byte_wrap(
     used_default_char: bool,
 ) -> OsResult<Vec<u8>>
 {
+    let x = if x.len() == 0 { &[0x00] } else { x };
     let l = x.len() * 4;
     let mut ret: Vec<u8> = Vec::with_capacity(l);
     unsafe { ret.set_len(l); }
@@ -66,6 +67,7 @@ fn wide_char_to_multi_byte_wrap(
 }
 
 /// Gets the required buffer size and gets a multi-byte string.
+#[inline]
 fn wide_char_to_multi_byte2(
     code_page: UINT,
     wc_flags: DWORD,
@@ -107,6 +109,7 @@ fn multi_byte_to_wide_char_wrap(
     mb_flags: DWORD,
     x: &[u8],
 ) -> OsResult<Vec<u16>> {
+    let x = if x.len() == 0 { &[0x00] } else { x };
     let l = x.len();
     let mut ret: Vec<u16> = Vec::with_capacity(l);
     unsafe { ret.set_len(l); }
@@ -133,6 +136,7 @@ fn multi_byte_to_wide_char_wrap(
 }
 
 /// Gets the required buffer size and gets a wide string.
+#[inline]
 fn multi_byte_to_wide_char2(
     code_page: UINT,
     mb_flags: DWORD,

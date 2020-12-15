@@ -97,4 +97,21 @@ pub mod tests {
         assert_eq!(Err(conv_err!(@ansi ERROR_NO_UNICODE_TRANSLATION)), sw.to_astring());
         let _ = sw.to_astring_lossy().to_string_lossy();
     }
+
+    #[test]
+    fn test_empty_string() {
+        assert_eq!("", &WString::try_from("").unwrap().to_string().unwrap());
+        assert_eq!("", &WString::try_from("").unwrap().to_string_lossy());
+        assert_eq!("", &WString::from_str_lossy("").to_string().unwrap());
+        assert_eq!("", &WString::from_str_lossy("").to_string_lossy());
+        assert_eq!("", &AString::try_from("").unwrap().to_string().unwrap());
+        assert_eq!("", &AString::try_from("").unwrap().to_string_lossy());
+        assert_eq!("", &AString::from_str_lossy("").to_string().unwrap());
+        assert_eq!("", &AString::from_str_lossy("").to_string_lossy());
+
+        assert_eq!("", &WString::from_str_lossy("").to_astring().unwrap().to_string_lossy());
+        assert_eq!("", &WString::from_str_lossy("").to_astring_lossy().to_string_lossy());
+        assert_eq!("", &AString::from_str_lossy("").to_wstring().unwrap().to_string().unwrap());
+        assert_eq!("", &AString::from_str_lossy("").to_wstring_lossy().to_string().unwrap());
+    }
 }
