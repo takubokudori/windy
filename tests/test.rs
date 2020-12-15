@@ -33,9 +33,14 @@ pub mod tests {
         assert_ne!(Ok(x), WString::try_from("Test"));
         let x = &mut [0x0074, 0x0065, 0x0073, 0x0074, 0x0000];
         unsafe {
-            let x = WString::from_raw(x.as_mut_ptr());
-            assert_eq!("test", x.to_string_lossy());
-            std::mem::forget(x);
+            let s = WString::from_raw(x.as_mut_ptr());
+            assert_eq!("test", s.to_string_lossy());
+            let s = WString::from_raw_s(x.as_mut_ptr(), 5);
+            assert_eq!("test", s.to_string_lossy());
+            let s = WString::clone_from_raw(x.as_mut_ptr());
+            assert_eq!("test", s.to_string_lossy());
+            let s = WString::clone_from_raw_s(x.as_mut_ptr(), 6);
+            assert_eq!("test", s.to_string_lossy());
         }
     }
 
@@ -54,9 +59,14 @@ pub mod tests {
         assert_ne!(Ok(x), AString::try_from("Te"));
         let x = &mut [0x74, 0x65, 0x73, 0x74, 0x00];
         unsafe {
-            let x = AString::from_raw(x.as_mut_ptr());
-            assert_eq!("test", x.to_string_lossy());
-            std::mem::forget(x);
+            let s = AString::from_raw(x.as_mut_ptr());
+            assert_eq!("test", s.to_string_lossy());
+            let s = AString::from_raw_s(x.as_mut_ptr(), 5);
+            assert_eq!("test", s.to_string_lossy());
+            let s = AString::clone_from_raw(x.as_mut_ptr());
+            assert_eq!("test", s.to_string_lossy());
+            let s = AString::clone_from_raw_s(x.as_mut_ptr(), 6);
+            assert_eq!("test", s.to_string_lossy());
         }
     }
 

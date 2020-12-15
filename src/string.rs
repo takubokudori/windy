@@ -5,6 +5,7 @@ use std::cmp::Ordering;
 use std::convert::TryFrom;
 use std::fmt::Write;
 use std::ops;
+use std::mem::ManuallyDrop;
 
 const CP_ACP: UINT = 0;
 const CP_UTF8: UINT = 65001;
@@ -214,7 +215,7 @@ impl WString {
             v.push(0);
         }
         v.set_len(len + 1);
-        Self::new_nul_unchecked(v)
+        Self::_new_nul_unchecked(v)
     }
 
     #[inline]
@@ -229,6 +230,10 @@ impl WString {
     /// `v` must be a null-terminated unicode string.
     pub unsafe fn new_nul_unchecked<T: Into<Vec<u16>>>(v: T) -> Self {
         let v = v.into();
+        Self::_new_nul_unchecked(v)
+    }
+
+    unsafe fn _new_nul_unchecked(v: Vec<u16>) -> Self {
         Self { inner: v.into_boxed_slice() }
     }
 
@@ -274,15 +279,35 @@ impl WString {
     ///
     /// # Safety
     /// `ptr` must be a null-terminated unicode string.
-    pub unsafe fn from_raw(ptr: *mut wchar_t) -> Self {
+    pub unsafe fn from_raw(ptr: *mut wchar_t) -> ManuallyDrop<Self> {
         let len = wcslen(ptr);
         let slice = std::slice::from_raw_parts_mut(ptr, len as usize + 1);
-        Self { inner: Box::from_raw(slice) }
+        ManuallyDrop::new(
+            Self { inner: Box::from_raw(slice) }
+        )
     }
 
-    pub unsafe fn from_raw_s(ptr: *mut u16, len: usize) -> Self {
+    pub unsafe fn from_raw_s(ptr: *mut wchar_t, len: usize) -> ManuallyDrop<Self> {
         let v = Vec::from_raw_parts(ptr, len, len);
-        Self::_new(v)
+        ManuallyDrop::new(
+            Self::_new(v)
+        )
+    }
+
+    /// Converts `ptr` string to [`WString`].
+    ///
+    /// # Safety
+    /// `ptr` must be a null-terminated unicode string.
+    pub unsafe fn clone_from_raw(ptr: *mut wchar_t) -> Self {
+        let len = wcslen(ptr);
+        let slice = std::slice::from_raw_parts_mut(ptr, len as usize + 1);
+
+        Self { inner: slice.to_vec().into_boxed_slice() }
+    }
+
+    pub unsafe fn clone_from_raw_s(ptr: *mut wchar_t, len: usize) -> Self {
+        let v = Vec::from_raw_parts(ptr, len, len);
+        Self::_new(v.clone())
     }
 }
 
@@ -587,15 +612,34 @@ impl AString {
     ///
     /// # Safety
     /// `ptr` must be a null-terminated ANSI string.
-    pub unsafe fn from_raw(ptr: *mut u8) -> Self {
+    pub unsafe fn from_raw(ptr: *mut u8) -> ManuallyDrop<Self> {
         let len = strlen(ptr);
         let slice = std::slice::from_raw_parts_mut(ptr, len as usize + 1);
-        Self { inner: Box::from_raw(slice) }
+        ManuallyDrop::new(
+            Self { inner: Box::from_raw(slice) }
+        )
     }
 
-    pub unsafe fn from_raw_s(ptr: *mut u8, len: usize) -> Self {
+    pub unsafe fn from_raw_s(ptr: *mut u8, len: usize) -> ManuallyDrop<Self> {
         let v = Vec::from_raw_parts(ptr, len, len);
-        Self::new_unchecked(v)
+        ManuallyDrop::new(
+            Self::new_unchecked(v)
+        )
+    }
+
+    /// Converts `ptr` string to [`AString`].
+    ///
+    /// # Safety
+    /// `ptr` must be a null-terminated ANSI string.
+    pub unsafe fn clone_from_raw(ptr: *mut u8) -> Self {
+        let len = strlen(ptr);
+        let slice = std::slice::from_raw_parts_mut(ptr, len as usize + 1);
+        Self { inner: slice.to_vec().into_boxed_slice() }
+    }
+
+    pub unsafe fn clone_from_raw_s(ptr: *mut u8, len: usize) -> Self {
+        let v = Vec::from_raw_parts(ptr, len, len);
+        Self::new_unchecked(v.clone())
     }
 }
 
