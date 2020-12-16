@@ -1,8 +1,6 @@
 # Windy
 
-Windows strings library
-
-This crate supports AString (ANSI string) and WString (Unicode string).
+A Windows strings library supports AString (ANSI string) and WString (Unicode string).
 
 # Features
 
