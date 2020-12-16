@@ -39,7 +39,9 @@ pub mod tests {
             assert_eq!("tes", s.to_string_lossy());
             let s = WString::from_raw_s(x.as_mut_ptr(), 4);
             assert_eq!("test", s.to_string_lossy());
-            let s = WString::from_raw_s(x.as_mut_ptr(), 7);
+            let s = WString::from_raw_s(x.as_mut_ptr(), 5);
+            assert_eq!("test", s.to_string_lossy());
+            let s = WString::from_raw_s(x.as_mut_ptr(), 6);
             assert_eq!("test", s.to_string_lossy());
             let s = WString::clone_from_raw(x.as_mut_ptr());
             assert_eq!("test", s.to_string_lossy());
@@ -47,7 +49,9 @@ pub mod tests {
             assert_eq!("tes", s.to_string_lossy());
             let s = WString::clone_from_raw_s(x.as_mut_ptr(), 4);
             assert_eq!("test", s.to_string_lossy());
-            let s = WString::clone_from_raw_s(x.as_mut_ptr(), 7);
+            let s = WString::clone_from_raw_s(x.as_mut_ptr(), 5);
+            assert_eq!("test", s.to_string_lossy());
+            let s = WString::clone_from_raw_s(x.as_mut_ptr(), 6);
             assert_eq!("test", s.to_string_lossy());
         }
     }
@@ -69,19 +73,23 @@ pub mod tests {
         unsafe {
             let s = AString::from_raw(x.as_mut_ptr());
             assert_eq!("test", s.to_string_lossy());
-            let s = AString::from_raw_s(x.as_mut_ptr(), 2);
+            let s = AString::from_raw_s(x.as_mut_ptr(), 3);
             assert_eq!("tes", s.to_string_lossy());
             let s = AString::from_raw_s(x.as_mut_ptr(), 4);
             assert_eq!("test", s.to_string_lossy());
-            let s = AString::from_raw_s(x.as_mut_ptr(), 7);
+            let s = AString::from_raw_s(x.as_mut_ptr(), 5);
+            assert_eq!("test", s.to_string_lossy());
+            let s = AString::from_raw_s(x.as_mut_ptr(), 6);
             assert_eq!("test", s.to_string_lossy());
             let s = AString::clone_from_raw(x.as_mut_ptr());
             assert_eq!("test", s.to_string_lossy());
-            let s = AString::clone_from_raw_s(x.as_mut_ptr(), 2);
+            let s = AString::clone_from_raw_s(x.as_mut_ptr(), 3);
             assert_eq!("tes", s.to_string_lossy());
             let s = AString::clone_from_raw_s(x.as_mut_ptr(), 4);
             assert_eq!("test", s.to_string_lossy());
-            let s = AString::clone_from_raw_s(x.as_mut_ptr(), 7);
+            let s = AString::clone_from_raw_s(x.as_mut_ptr(), 5);
+            assert_eq!("test", s.to_string_lossy());
+            let s = AString::clone_from_raw_s(x.as_mut_ptr(), 6);
             assert_eq!("test", s.to_string_lossy());
         }
     }

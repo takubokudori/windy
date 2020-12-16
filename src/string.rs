@@ -804,7 +804,7 @@ impl AStr {
         let wc = multi_byte_to_wide_char_wrap(
             CP_ACP,
             MB_ERR_INVALID_CHARS,
-            self.to_bytes_with_nul(),
+            self.to_bytes(),
         ).map_err(|x| conv_err!(@unicode x))?;
         // valid unicode string
         unsafe { Ok(WString::_new(wc)) }
@@ -824,7 +824,7 @@ impl AStr {
         let wc = multi_byte_to_wide_char_wrap(
             CP_ACP,
             0,
-            self.to_bytes_with_nul(),
+            self.to_bytes(),
         ).map_err(|x| conv_err!(@unicode x)).unwrap();
         // valid unicode string
         unsafe { WString::_new(wc) }
