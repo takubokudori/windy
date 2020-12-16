@@ -2,10 +2,10 @@
 // This source code is licensed under the MIT or Apache-2.0 license.
 use crate::*;
 use std::cmp::Ordering;
-use std::convert::TryFrom;
+use std::convert::{TryFrom, TryInto};
 use std::fmt::Write;
-use std::ops;
 use std::mem::ManuallyDrop;
+use std::ops;
 
 const CP_ACP: UINT = 0;
 const CP_UTF8: UINT = 65001;
@@ -341,6 +341,15 @@ impl Drop for WString {
             *self.inner.as_mut_ptr() = 0;
             std::mem::forget(self)
         }
+    }
+}
+
+impl TryInto<String> for WString {
+    type Error = ConvertError;
+
+    #[inline]
+    fn try_into(self) -> Result<String, Self::Error> {
+        self.to_string()
     }
 }
 
@@ -681,6 +690,15 @@ impl Drop for AString {
             *self.inner.as_mut_ptr() = 0;
             std::mem::forget(self)
         }
+    }
+}
+
+impl TryInto<String> for AString {
+    type Error = ConvertError;
+
+    #[inline]
+    fn try_into(self) -> Result<String, Self::Error> {
+        self.to_string()
     }
 }
 
