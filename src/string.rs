@@ -289,8 +289,12 @@ impl WString {
         Self::from_raw_s_unchecked(ptr, len)
     }
 
+    /// Converts `ptr` string to [`WString`] without length check.
+    ///
+    /// # Safety
+    /// `ptr` must be a null-terminated ANSI string and `ptr[len - 1] == '\0'`.
     #[inline]
-    unsafe fn from_raw_s_unchecked(ptr: *mut wchar_t, len: usize) -> ManuallyDrop<Self> {
+    pub unsafe fn from_raw_s_unchecked(ptr: *mut wchar_t, len: usize) -> ManuallyDrop<Self> {
         let slice = std::slice::from_raw_parts_mut(ptr, len as usize + 1);
         ManuallyDrop::new(
             Self { inner: Box::from_raw(slice) }
@@ -311,8 +315,12 @@ impl WString {
         Self::clone_from_raw_s_unchecked(ptr, len)
     }
 
+    /// Converts `ptr` string to [`WString`] without length check.
+    ///
+    /// # Safety
+    /// `ptr` must be a null-terminated ANSI string and `ptr[len - 1] == '\0'`.
     #[inline]
-    unsafe fn clone_from_raw_s_unchecked(ptr: *mut wchar_t, len: usize) -> Self {
+    pub unsafe fn clone_from_raw_s_unchecked(ptr: *mut wchar_t, len: usize) -> Self {
         let slice = std::slice::from_raw_parts_mut(ptr, len as usize + 1);
         Self { inner: slice.to_vec().into_boxed_slice() }
     }
@@ -638,8 +646,12 @@ impl AString {
         Self::from_raw_s_unchecked(ptr, len)
     }
 
+    /// Converts `ptr` string to [`AString`] without length check.
+    ///
+    /// # Safety
+    /// `ptr` must be a null-terminated ANSI string and `ptr[len - 1] == '\0'`.
     #[inline]
-    unsafe fn from_raw_s_unchecked(ptr: *mut u8, len: usize) -> ManuallyDrop<Self> {
+    pub unsafe fn from_raw_s_unchecked(ptr: *mut u8, len: usize) -> ManuallyDrop<Self> {
         let slice = std::slice::from_raw_parts_mut(ptr, len as usize + 1);
         ManuallyDrop::new(
             Self { inner: Box::from_raw(slice) }
@@ -660,8 +672,12 @@ impl AString {
         Self::clone_from_raw_s_unchecked(ptr, len)
     }
 
+    /// Converts `ptr` string to [`AString`] without length check.
+    ///
+    /// # Safety
+    /// `ptr` must be a null-terminated ANSI string and `ptr[len - 1] == '\0'`.
     #[inline]
-    unsafe fn clone_from_raw_s_unchecked(ptr: *mut u8, len: usize) -> Self {
+    pub unsafe fn clone_from_raw_s_unchecked(ptr: *mut u8, len: usize) -> Self {
         let slice = std::slice::from_raw_parts_mut(ptr, len as usize + 1);
         Self { inner: slice.to_vec().into_boxed_slice() }
     }
