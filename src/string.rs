@@ -34,7 +34,7 @@ fn wide_char_to_multi_byte_wrap(
     used_default_char: bool,
 ) -> OsResult<Vec<u8>>
 {
-    let x = if x.len() == 0 { &[0x00] } else { x };
+    let x = if x.is_empty() { &[0x00] } else { x };
     let l = x.len() * 4;
     let mut ret: Vec<u8> = Vec::with_capacity(l);
     unsafe { ret.set_len(l); }
@@ -110,7 +110,7 @@ fn multi_byte_to_wide_char_wrap(
     mb_flags: DWORD,
     x: &[u8],
 ) -> OsResult<Vec<u16>> {
-    let x = if x.len() == 0 { &[0x00] } else { x };
+    let x = if x.is_empty() { &[0x00] } else { x };
     let l = x.len();
     let mut ret: Vec<u16> = Vec::with_capacity(l);
     unsafe { ret.set_len(l); }
@@ -175,6 +175,9 @@ impl WString {
     pub fn as_bytes_with_nul(&self) -> &[u16] { &self.inner }
 
     #[inline]
+    pub fn as_bytes_with_nul_mut(&mut self) -> &mut [u16] { &mut self.inner }
+
+    #[inline]
     pub fn as_bytes(&self) -> &[u16] { &self.as_bytes_with_nul()[..self.inner.len() - 1] }
 
     #[inline]
@@ -191,14 +194,19 @@ impl WString {
     /// Returns &mut [`WStr`].
     #[inline]
     pub unsafe fn as_mut_c_str(&mut self) -> &mut WStr {
-        WStr::from_bytes_with_nul_unchecked_mut(self.as_bytes_with_nul())
+        WStr::from_bytes_with_nul_unchecked_mut(self.as_bytes_with_nul_mut())
     }
 
     #[inline]
     pub fn as_ptr(&self) -> *const u16 { self.inner.as_ptr() }
 
+    /// Returns the length of bytes.
     #[inline]
     pub fn len(&self) -> usize { self.inner.len() }
+
+    /// Returns `true` if the length of bytes is 0.
+    #[inline]
+    pub fn is_empty(&self) -> bool { self.len() == 0 }
 
     /// Creates [`WString`] from [`Vec`]<u16> without any encoding checks.
     pub unsafe fn new_unchecked<T: Into<Vec<u16>>>(v: T) -> Self { Self::_new(v.into()) }
@@ -251,7 +259,7 @@ impl WString {
             CP_UTF8,
             MB_ERR_INVALID_CHARS,
             x.as_bytes(),
-        ).map_err(|x| conv_err!(@unicode x))?;
+        ).map_err(conv_err!(@unicode))?;
         // valid UTF-8 string
         unsafe { Ok(Self::_new(wb)) }
     }
@@ -347,7 +355,6 @@ impl Drop for WString {
     fn drop(&mut self) {
         unsafe {
             *self.inner.as_mut_ptr() = 0;
-            std::mem::forget(self)
         }
     }
 }
@@ -427,7 +434,7 @@ impl WStr {
     }
 
     #[inline]
-    pub unsafe fn from_bytes_with_nul_unchecked_mut(bytes: &[u16]) -> &mut Self {
+    pub unsafe fn from_bytes_with_nul_unchecked_mut(bytes: &mut [u16]) -> &mut Self {
         &mut *(bytes as *const [u16] as *mut Self)
     }
 
@@ -437,8 +444,13 @@ impl WStr {
     #[inline]
     pub fn as_mut_ptr(&mut self) -> *mut wchar_t { self.inner.as_mut_ptr() }
 
+    /// Returns the length of bytes.
     #[inline]
     pub fn len(&self) -> usize { self.inner.len() }
+
+    /// Returns `true` if the length of bytes is 0.
+    #[inline]
+    pub fn is_empty(&self) -> bool { self.len() == 0 }
 
     #[inline]
     pub fn to_bytes_with_nul(&self) -> &[u16] { &self.inner }
@@ -468,7 +480,7 @@ impl WStr {
                 WC_NO_BEST_FIT_CHARS | WC_ERR_INVALID_CHARS,
                 self.to_bytes_with_nul(),
                 false,
-            ).map_err(|x| conv_err!(@utf8 x))?;
+            ).map_err(conv_err!(@utf8))?;
             mb.set_len(mb.len() - 1); // remove NULL
             // valid UTF-8 string
             Ok(String::from_utf8_unchecked(mb))
@@ -485,7 +497,7 @@ impl WStr {
                 WC_NO_BEST_FIT_CHARS,
                 self.to_bytes_with_nul(),
                 false,
-            ).map_err(|x| conv_err!(@utf8 x)).unwrap();
+            ).map_err(conv_err!(@utf8)).unwrap();
             mb.set_len(mb.len() - 1); // remove NULL
             // valid UTF-8 string
             String::from_utf8_unchecked(mb)
@@ -508,7 +520,7 @@ impl WStr {
             WC_NO_BEST_FIT_CHARS,
             self.to_bytes_with_nul(),
             true,
-        ).map_err(|x| conv_err!(@ansi x))?;
+        ).map_err(conv_err!(@ansi))?;
         // valid ANSI string
         unsafe { Ok(AString::new_unchecked(mb)) }
     }
@@ -565,6 +577,9 @@ impl AString {
     pub fn as_bytes_with_nul(&self) -> &[u8] { &self.inner }
 
     #[inline]
+    unsafe fn as_bytes_with_nul_mut(&mut self) -> &mut [u8] { &mut self.inner }
+
+    #[inline]
     pub fn as_bytes(&self) -> &[u8] { &self.as_bytes_with_nul()[..self.inner.len() - 1] }
 
     #[inline]
@@ -573,14 +588,19 @@ impl AString {
     /// Returns &mut [`AStr`].
     #[inline]
     pub unsafe fn as_mut_c_str(&mut self) -> &mut AStr {
-        AStr::from_bytes_with_nul_unchecked_mut(self.as_bytes_with_nul())
+        AStr::from_bytes_with_nul_unchecked_mut(self.as_bytes_with_nul_mut())
     }
 
     #[inline]
     pub fn as_ptr(&self) -> *const u8 { self.inner.as_ptr() }
 
+    /// Returns the length of bytes.
     #[inline]
     pub fn len(&self) -> usize { self.inner.len() }
+
+    /// Returns `true` if the length of bytes is 0.
+    #[inline]
+    pub fn is_empty(&self) -> bool { self.len() == 0 }
 
     /// Creates [`AString`] from `v` without any encoding checks.
     pub unsafe fn new_unchecked<T: Into<Vec<u8>>>(v: T) -> Self {
@@ -704,7 +724,6 @@ impl Drop for AString {
     fn drop(&mut self) {
         unsafe {
             *self.inner.as_mut_ptr() = 0;
-            std::mem::forget(self)
         }
     }
 }
@@ -784,7 +803,7 @@ impl AStr {
     }
 
     #[inline]
-    pub unsafe fn from_bytes_with_nul_unchecked_mut(bytes: &[u8]) -> &mut Self {
+    pub unsafe fn from_bytes_with_nul_unchecked_mut(bytes: &mut [u8]) -> &mut Self {
         &mut *(bytes as *const [u8] as *mut Self)
     }
 
@@ -800,8 +819,13 @@ impl AStr {
     #[inline]
     pub fn as_mut_u8_ptr(&mut self) -> *mut u8 { self.inner.as_mut_ptr() }
 
+    /// Returns the length of bytes.
     #[inline]
     pub fn len(&self) -> usize { self.inner.len() }
+
+    /// Returns `true` if the length of bytes is 0.
+    #[inline]
+    pub fn is_empty(&self) -> bool { self.len() == 0 }
 
     #[inline]
     pub fn to_bytes_with_nul(&self) -> &[u8] { &self.inner }
@@ -839,7 +863,7 @@ impl AStr {
             CP_ACP,
             MB_ERR_INVALID_CHARS,
             self.to_bytes(),
-        ).map_err(|x| conv_err!(@unicode x))?;
+        ).map_err(conv_err!(@unicode))?;
         // valid unicode string
         unsafe { Ok(WString::_new(wc)) }
     }
@@ -859,7 +883,7 @@ impl AStr {
             CP_ACP,
             0,
             self.to_bytes(),
-        ).map_err(|x| conv_err!(@unicode x)).unwrap();
+        ).map_err(conv_err!(@unicode)).unwrap();
         // valid unicode string
         unsafe { WString::_new(wc) }
     }

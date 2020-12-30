@@ -20,19 +20,17 @@
 //! use windy::AString;
 //! use std::process::Command;
 //!
-//! fn main() {
-//!     let o = Command::new("cmd")
-//!         .args(&["/c", "ThisCommandDoesNotExist"])
-//!         .output().unwrap();
-//!     let (stdout, stderr) = unsafe {
-//!         (
-//!             AString::new_unchecked(o.stdout),
-//!             AString::new_unchecked(o.stderr)
-//!         )
-//!     };
-//!     println!("stdout: {:?}", stdout);
-//!     println!("stderr: {:?}", stderr);
-//! }
+//! let o = Command::new("cmd")
+//!     .args(&["/c", "ThisCommandDoesNotExist"])
+//!     .output().unwrap();
+//! let (stdout, stderr) = unsafe {
+//!     (
+//!         AString::new_unchecked(o.stdout),
+//!         AString::new_unchecked(o.stderr)
+//!     )
+//! };
+//! println!("stdout: {:?}", stdout);
+//! println!("stderr: {:?}", stderr);
 //! ```
 //! # License
 //!
@@ -106,9 +104,12 @@ impl Into<i32> for ConvertError {
 
 #[macro_export]
 macro_rules! conv_err {
-    (@utf8 $e:expr) => (ConvertError::ConvertToUtf8Error($e));
-    (@ansi $e:expr) => (ConvertError::ConvertToAnsiError($e));
-    (@unicode $e:expr) => (ConvertError::ConvertToUnicodeError($e));
+    (@utf8 $e:expr) => ($crate::ConvertError::ConvertToUtf8Error($e));
+    (@ansi $e:expr) => ($crate::ConvertError::ConvertToAnsiError($e));
+    (@unicode $e:expr) => ($crate::ConvertError::ConvertToUnicodeError($e));
+    (@utf8) => ($crate::ConvertError::ConvertToUtf8Error);
+    (@ansi) => ($crate::ConvertError::ConvertToAnsiError);
+    (@unicode) => ($crate::ConvertError::ConvertToUnicodeError);
 }
 
 pub type ConvertResult<T> = Result<T, ConvertError>;
@@ -117,6 +118,7 @@ pub(crate) type OsResult<T> = Result<T, u32>;
 
 #[inline(always)]
 #[allow(non_snake_case)]
+#[allow(clippy::too_many_arguments)]
 pub(crate) unsafe fn MultiByteToWideChar(
     CodePage: UINT,
     dwFlags: DWORD,
@@ -140,6 +142,7 @@ pub(crate) unsafe fn MultiByteToWideChar(
 
 #[inline(always)]
 #[allow(non_snake_case)]
+#[allow(clippy::too_many_arguments)]
 pub(crate) unsafe fn WideCharToMultiByte(
     CodePage: UINT,
     dwFlags: DWORD,
@@ -181,7 +184,7 @@ pub(crate) fn multi_byte_to_wide_char(
             mb_bytes.len() as i32,
             wc_bytes.as_mut_ptr(),
             wc_bytes.len() as i32,
-        ).and_then(|x| Ok(x as usize))
+        ).map(|x| x as usize)
     }
 }
 
@@ -210,6 +213,6 @@ pub(crate) fn wide_char_to_multi_byte<'a, DC, UDC>(
             mb_bytes.len() as i32,
             dc as *const i8,
             used_default_char.into().map_or(null_mut(), |x| x as *mut _ as *mut _),
-        ).and_then(|x| Ok(x as usize))
+        ).map(|x| x as usize)
     }
 }
