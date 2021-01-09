@@ -395,6 +395,14 @@ impl TryFrom<&String> for WString {
     }
 }
 
+impl From<&WStr> for WString {
+    fn from(x: &WStr) -> Self {
+        unsafe {
+            Self::new_nul_unchecked(x.to_bytes_with_nul().to_vec())
+        }
+    }
+}
+
 impl TryFrom<&AStr> for WString {
     type Error = ConvertError;
 
@@ -724,6 +732,14 @@ impl Drop for AString {
     fn drop(&mut self) {
         unsafe {
             *self.inner.as_mut_ptr() = 0;
+        }
+    }
+}
+
+impl From<&AStr> for AString {
+    fn from(x: &AStr) -> Self {
+        unsafe {
+            Self::new_nul_unchecked(x.to_bytes_with_nul().to_vec())
         }
     }
 }
