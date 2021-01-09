@@ -1,6 +1,7 @@
 // Copyright takubokudori.
 // This source code is licensed under the MIT or Apache-2.0 license.
 #[cfg(test)]
+#[cfg(not(feature = "no_std"))]
 pub mod tests {
     use windy::*;
     use std::convert::TryFrom;
@@ -148,4 +149,15 @@ pub mod tests {
         assert_eq!("", &AString::from_str_lossy("").to_wstring().unwrap().to_string().unwrap());
         assert_eq!("", &AString::from_str_lossy("").to_wstring_lossy().to_string().unwrap());
     }
+}
+
+#[cfg(test)]
+#[cfg(feature = "no_std")]
+pub mod tests {
+
+    #[test]
+    fn test_astr(){
+
+    }
+
 }

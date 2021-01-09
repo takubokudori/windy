@@ -1,8 +1,12 @@
 // Copyright takubokudori.
 // This source code is licensed under the MIT or Apache-2.0 license.
-pub(crate) use std::os::raw::{c_int, c_uint, c_ulong, c_char};
+#![allow(non_camel_case_types)]
+#![allow(unused)]
 
-#[allow(non_camel_case_types)]
+pub(crate) type c_char = i8;
+pub(crate) type c_int = i32;
+pub(crate) type c_uint = u32;
+pub(crate) type c_ulong = u32;
 pub(crate) type wchar_t = u16;
 
 pub(crate) type UINT = c_uint;

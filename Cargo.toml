@@ -27,3 +27,5 @@ harness = false
 
 [features]
 debug_insufficient_buffer = []
+no_std = []
+
