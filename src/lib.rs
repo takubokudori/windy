@@ -41,6 +41,8 @@
 mod raw;
 #[cfg(not(feature = "no_std"))]
 mod string;
+#[cfg(not(feature = "no_std"))]
+mod traits;
 mod windy_str;
 
 use raw::*;

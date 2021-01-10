@@ -14,7 +14,7 @@ fn main() {
     let (stdout, stderr) = unsafe {
         (
             AString::new_unchecked(o.stdout),
-            AString::new_unchecked(o.stderr)
+            AString::new_unchecked(o.stderr),
         )
     };
     println!("stdout: {:?}", stdout);

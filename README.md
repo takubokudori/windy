@@ -7,6 +7,7 @@ A Windows strings library supports AString (ANSI string) and WString (Unicode st
 - ANSI string(AString)
 - Unicode string(WString)
 - Interconversion between AString, WString and String.
+- no_std support
 
 # Installation
 
@@ -39,6 +40,12 @@ fn main() {
     println!("stderr: {:?}", stderr);
 }
 ```
+
+# no_std support
+
+If you want to use no_std, turn on the no_std feature.
+
+If no_std feature is on, AString and WString are not available.
 
 # License
 
