@@ -1,13 +1,16 @@
 // Copyright takubokudori.
 // This source code is licensed under the MIT or Apache-2.0 license.
-use crate::*;
-use crate::__lib::convert::{TryFrom, TryInto};
-use crate::__lib::fmt::Write;
-use crate::__lib::ops;
-use crate::__lib::slice;
+use crate::{
+    __lib::{
+        convert::{TryFrom, TryInto},
+        fmt::Write,
+        ops, slice,
+    },
+    *,
+};
 
 macro_rules! str_impl_debug {
-    ($x:ident) => (
+    ($x:ident) => {
         impl fmt::Debug for $x {
             fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
                 f.write_char('"')?;
@@ -22,7 +25,7 @@ macro_rules! str_impl_debug {
                 f.write_char('"')
             }
         }
-    )
+    };
 }
 
 /// Represents wide string (unicode string).
@@ -40,15 +43,24 @@ impl WString {
     pub fn as_bytes_with_nul_mut(&mut self) -> &mut [u16] { &mut self.inner }
 
     #[inline]
-    pub fn as_bytes(&self) -> &[u16] { &self.as_bytes_with_nul()[..self.inner.len() - 1] }
-
-    #[inline]
-    pub fn as_u8_bytes_with_nul(&self) -> &[u8] {
-        unsafe { slice::from_raw_parts(self.inner.as_ptr() as *const u8, self.inner.len() * 2) }
+    pub fn as_bytes(&self) -> &[u16] {
+        &self.as_bytes_with_nul()[..self.inner.len() - 1]
     }
 
     #[inline]
-    pub fn as_u8_bytes(&self) -> &[u8] { &self.as_u8_bytes_with_nul()[..self.inner.len() - 2] }
+    pub fn as_u8_bytes_with_nul(&self) -> &[u8] {
+        unsafe {
+            slice::from_raw_parts(
+                self.inner.as_ptr() as *const u8,
+                self.inner.len() * 2,
+            )
+        }
+    }
+
+    #[inline]
+    pub fn as_u8_bytes(&self) -> &[u8] {
+        &self.as_u8_bytes_with_nul()[..self.inner.len() - 2]
+    }
 
     #[inline]
     pub fn as_c_str(&self) -> &WStr { &*self }
@@ -56,7 +68,11 @@ impl WString {
     /// Returns &mut [`WStr`].
     #[inline]
     pub fn as_mut_c_str(&mut self) -> &mut WStr {
-        unsafe { WStr::from_bytes_with_nul_unchecked_mut(self.as_bytes_with_nul_mut()) }
+        unsafe {
+            WStr::from_bytes_with_nul_unchecked_mut(
+                self.as_bytes_with_nul_mut(),
+            )
+        }
     }
 
     #[inline]
@@ -74,13 +90,17 @@ impl WString {
     ///
     /// # Safety
     /// `v` must be a correct unicode string.
-    pub unsafe fn new_unchecked<T: Into<Vec<u16>>>(v: T) -> Self { Self::_new(v.into()) }
+    pub unsafe fn new_unchecked<T: Into<Vec<u16>>>(v: T) -> Self {
+        Self::_new(v.into())
+    }
 
     /// Creates [`WString`] from [`Vec`]<u8> without any encoding checks.
     ///
     /// # Safety
     /// `v` must be a correct unicode string.
-    pub unsafe fn new_c_unchecked<T: Into<Vec<u8>>>(v: T) -> Self { Self::_new2(v.into()) }
+    pub unsafe fn new_c_unchecked<T: Into<Vec<u8>>>(v: T) -> Self {
+        Self::_new2(v.into())
+    }
 
     #[inline]
     pub(crate) unsafe fn _new(mut v: Vec<u16>) -> Self {
@@ -96,9 +116,15 @@ impl WString {
 
     #[inline]
     pub(crate) unsafe fn _new2(mut v: Vec<u8>) -> Self {
-        if v.len() & 1 == 1 { v.push(0); } // Make the length even.
+        if v.len() & 1 == 1 {
+            v.push(0);
+        } // Make the length even.
         let v = v.leak();
-        let x = Vec::from_raw_parts(v.as_ptr() as *mut u16, v.len() / 2, v.len() / 2);
+        let x = Vec::from_raw_parts(
+            v.as_ptr() as *mut u16,
+            v.len() / 2,
+            v.len() / 2,
+        );
         Self::_new(x)
     }
 
@@ -113,7 +139,9 @@ impl WString {
 
     #[inline]
     unsafe fn _new_nul_unchecked(v: Vec<u16>) -> Self {
-        Self { inner: v.into_boxed_slice() }
+        Self {
+            inner: v.into_boxed_slice(),
+        }
     }
 
     /// Converts `&str` to [`WString`].
@@ -131,7 +159,8 @@ impl WString {
             CP_UTF8,
             MB_ERR_INVALID_CHARS,
             x.as_bytes(),
-        ).map_err(conv_err!(@unicode))?;
+        )
+        .map_err(conv_err!(@unicode))?;
         // valid UTF-8 string
         unsafe { Ok(Self::_new(wb)) }
     }
@@ -146,11 +175,8 @@ impl WString {
     /// println!("{:?}", s);
     /// ```
     pub fn from_str_lossy(x: &str) -> Self {
-        let wb = multi_byte_to_wide_char_wrap(
-            CP_UTF8,
-            0,
-            x.as_bytes(),
-        ).unwrap();
+        let wb =
+            multi_byte_to_wide_char_wrap(CP_UTF8, 0, x.as_bytes()).unwrap();
         // valid UTF-8 string
         unsafe { Self::_new(wb) }
     }
@@ -169,7 +195,9 @@ impl WString {
     /// `ptr` must be a null-terminated unicode string.
     pub unsafe fn clone_from_raw_s(ptr: *mut wchar_t, mut len: usize) -> Self {
         let len2 = wcsnlen(ptr, len);
-        if len2 < len { len = len2; }
+        if len2 < len {
+            len = len2;
+        }
         Self::clone_from_raw_s_unchecked(ptr, len)
     }
 
@@ -178,9 +206,14 @@ impl WString {
     /// # Safety
     /// `ptr` must be a null-terminated unicode string.
     #[inline]
-    pub unsafe fn clone_from_raw_s_unchecked(ptr: *mut wchar_t, len: usize) -> Self {
+    pub unsafe fn clone_from_raw_s_unchecked(
+        ptr: *mut wchar_t,
+        len: usize,
+    ) -> Self {
         let slice = slice::from_raw_parts_mut(ptr, len as usize + 1);
-        Self { inner: slice.to_vec().into_boxed_slice() }
+        Self {
+            inner: slice.to_vec().into_boxed_slice(),
+        }
     }
 }
 
@@ -196,9 +229,7 @@ impl ops::Index<ops::RangeFull> for WString {
     type Output = WStr;
 
     #[inline]
-    fn index(&self, _: ops::RangeFull) -> &Self::Output {
-        self
-    }
+    fn index(&self, _: ops::RangeFull) -> &Self::Output { self }
 }
 
 impl Drop for WString {
@@ -213,18 +244,14 @@ impl TryInto<String> for WString {
     type Error = ConvertError;
 
     #[inline]
-    fn try_into(self) -> Result<String, Self::Error> {
-        self.to_string()
-    }
+    fn try_into(self) -> Result<String, Self::Error> { self.to_string() }
 }
 
 impl TryFrom<&str> for WString {
     type Error = ConvertError;
 
     #[inline]
-    fn try_from(x: &str) -> Result<Self, Self::Error> {
-        Self::from_str(x)
-    }
+    fn try_from(x: &str) -> Result<Self, Self::Error> { Self::from_str(x) }
 }
 
 impl TryFrom<String> for WString {
@@ -247,9 +274,7 @@ impl TryFrom<&String> for WString {
 
 impl From<&WStr> for WString {
     fn from(x: &WStr) -> Self {
-        unsafe {
-            Self::new_nul_unchecked(x.to_bytes_with_nul().to_vec())
-        }
+        unsafe { Self::new_nul_unchecked(x.to_bytes_with_nul().to_vec()) }
     }
 }
 
@@ -257,9 +282,7 @@ impl TryFrom<&AStr> for WString {
     type Error = ConvertError;
 
     #[inline]
-    fn try_from(x: &AStr) -> Result<Self, Self::Error> {
-        x.to_wstring()
-    }
+    fn try_from(x: &AStr) -> Result<Self, Self::Error> { x.to_wstring() }
 }
 
 impl TryFrom<AString> for WString {
@@ -295,7 +318,9 @@ impl AString {
     unsafe fn as_bytes_with_nul_mut(&mut self) -> &mut [u8] { &mut self.inner }
 
     #[inline]
-    pub fn as_bytes(&self) -> &[u8] { &self.as_bytes_with_nul()[..self.inner.len() - 1] }
+    pub fn as_bytes(&self) -> &[u8] {
+        &self.as_bytes_with_nul()[..self.inner.len() - 1]
+    }
 
     #[inline]
     pub fn as_c_str(&self) -> &AStr { &*self }
@@ -304,7 +329,9 @@ impl AString {
     #[inline]
     pub fn as_mut_c_str(&mut self) -> &mut AStr {
         unsafe {
-            AStr::from_bytes_with_nul_unchecked_mut(self.as_bytes_with_nul_mut())
+            AStr::from_bytes_with_nul_unchecked_mut(
+                self.as_bytes_with_nul_mut(),
+            )
         }
     }
 
@@ -341,7 +368,9 @@ impl AString {
     #[inline]
     pub unsafe fn new_nul_unchecked<T: Into<Vec<u8>>>(v: T) -> Self {
         let v = v.into();
-        Self { inner: v.into_boxed_slice() }
+        Self {
+            inner: v.into_boxed_slice(),
+        }
     }
 
     /// Converts `&str` to [`AString`].
@@ -387,7 +416,9 @@ impl AString {
     /// `ptr` must be a null-terminated ANSI string.
     pub unsafe fn clone_from_raw_s(ptr: *mut u8, mut len: usize) -> Self {
         let len2 = strnlen(ptr, len);
-        if len2 < len { len = len2; }
+        if len2 < len {
+            len = len2;
+        }
         Self::clone_from_raw_s_unchecked(ptr, len)
     }
 
@@ -398,7 +429,9 @@ impl AString {
     #[inline]
     pub unsafe fn clone_from_raw_s_unchecked(ptr: *mut u8, len: usize) -> Self {
         let slice = slice::from_raw_parts_mut(ptr, len as usize + 1);
-        Self { inner: slice.to_vec().into_boxed_slice() }
+        Self {
+            inner: slice.to_vec().into_boxed_slice(),
+        }
     }
 }
 
@@ -414,9 +447,7 @@ impl ops::Index<ops::RangeFull> for AString {
     type Output = AStr;
 
     #[inline]
-    fn index(&self, _: ops::RangeFull) -> &Self::Output {
-        self
-    }
+    fn index(&self, _: ops::RangeFull) -> &Self::Output { self }
 }
 
 impl Drop for AString {
@@ -429,9 +460,7 @@ impl Drop for AString {
 
 impl From<&AStr> for AString {
     fn from(x: &AStr) -> Self {
-        unsafe {
-            Self::new_nul_unchecked(x.to_bytes_with_nul().to_vec())
-        }
+        unsafe { Self::new_nul_unchecked(x.to_bytes_with_nul().to_vec()) }
     }
 }
 
@@ -439,18 +468,14 @@ impl TryInto<String> for AString {
     type Error = ConvertError;
 
     #[inline]
-    fn try_into(self) -> Result<String, Self::Error> {
-        self.to_string()
-    }
+    fn try_into(self) -> Result<String, Self::Error> { self.to_string() }
 }
 
 impl TryFrom<&str> for AString {
     type Error = ConvertError;
 
     #[inline]
-    fn try_from(x: &str) -> Result<Self, Self::Error> {
-        Self::from_str(x)
-    }
+    fn try_from(x: &str) -> Result<Self, Self::Error> { Self::from_str(x) }
 }
 
 impl TryFrom<String> for AString {
@@ -475,9 +500,7 @@ impl TryFrom<&WStr> for AString {
     type Error = ConvertError;
 
     #[inline]
-    fn try_from(x: &WStr) -> Result<Self, Self::Error> {
-        x.to_astring()
-    }
+    fn try_from(x: &WStr) -> Result<Self, Self::Error> { x.to_astring() }
 }
 
 impl TryFrom<WString> for AString {

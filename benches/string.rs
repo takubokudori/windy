@@ -5,86 +5,77 @@ use std::convert::TryFrom;
 use windy::*;
 
 fn bench_utf8_to_unicode(c: &mut Criterion) {
-    c.bench_function("UTF-8 to Unicode", |b| b.iter(|| {
-        WString::try_from("Hello World!🍣食べたい").unwrap();
-    }));
+    c.bench_function("UTF-8 to Unicode", |b| {
+        b.iter(|| WString::try_from("Hello World!🍣食べたい").unwrap())
+    });
 }
 
 fn bench_unicode_to_utf8(c: &mut Criterion) {
     let s = WString::try_from("Hello World!🍣食べたい").unwrap();
-    c.bench_function("Unicode to UTF-8", |b| b.iter(|| {
-        s.to_string().unwrap();
-    }));
+    c.bench_function("Unicode to UTF-8", |b| b.iter(|| s.to_string().unwrap()));
 }
 
 fn bench_unicode_to_ansi(c: &mut Criterion) {
     let s = WString::try_from("Hello World").unwrap();
-    c.bench_function("Unicode to ANSI", |b| b.iter(|| {
-        s.to_astring().unwrap();
-    }));
+    c.bench_function("Unicode to ANSI", |b| b.iter(|| s.to_astring().unwrap()));
 }
 
 fn bench_ansi_to_unicode(c: &mut Criterion) {
     let s = AString::try_from("Hello World").unwrap();
-    c.bench_function("ANSI to Unicode", |b| b.iter(|| {
-        s.to_wstring().unwrap();
-    }));
+    c.bench_function("ANSI to Unicode", |b| b.iter(|| s.to_wstring().unwrap()));
 }
 
 fn bench_utf8_to_ansi(c: &mut Criterion) {
-    c.bench_function("UTF-8 to ANSI", |b| b.iter(|| {
-        AString::try_from("Hello World").unwrap();
-    }));
+    c.bench_function("UTF-8 to ANSI", |b| {
+        b.iter(|| AString::try_from("Hello World").unwrap())
+    });
 }
 
 fn bench_ansi_to_utf8(c: &mut Criterion) {
     let s = AString::try_from("Hello World").unwrap();
-    c.bench_function("ANSI to UTF-8", |b| b.iter(|| {
-        s.to_string().unwrap();
-    }));
+    c.bench_function("ANSI to UTF-8", |b| b.iter(|| s.to_string().unwrap()));
 }
 
 fn bench_utf8_to_unicode_lossy(c: &mut Criterion) {
-    c.bench_function("UTF-8 to Unicode lossy", |b| b.iter(|| {
-        let _ = WString::from_str_lossy("Hello World!🍣食べたい");
-    }));
+    c.bench_function("UTF-8 to Unicode lossy", |b| {
+        b.iter(|| WString::from_str_lossy("Hello World!🍣食べたい"))
+    });
 }
 
 fn bench_unicode_to_utf8_lossy(c: &mut Criterion) {
     let s = WString::try_from("Hello World!🍣食べたい").unwrap();
-    c.bench_function("Unicode to UTF-8 lossy", |b| b.iter(|| {
-        let _ = s.to_string_lossy();
-    }));
+    c.bench_function("Unicode to UTF-8 lossy", |b| {
+        b.iter(|| s.to_string_lossy())
+    });
 }
 
 fn bench_unicode_to_ansi_lossy(c: &mut Criterion) {
     let s = WString::try_from("Hello World").unwrap();
-    c.bench_function("Unicode to ANSI lossy", |b| b.iter(|| {
-        let _ = s.to_astring_lossy();
-    }));
+    c.bench_function("Unicode to ANSI lossy", |b| {
+        b.iter(|| s.to_astring_lossy())
+    });
 }
 
 fn bench_ansi_to_unicode_lossy(c: &mut Criterion) {
     let s = AString::try_from("Hello World").unwrap();
-    c.bench_function("ANSI to Unicode lossy", |b| b.iter(|| {
-        let _ = s.to_wstring_lossy();
-    }));
+    c.bench_function("ANSI to Unicode lossy", |b| {
+        b.iter(|| s.to_wstring_lossy())
+    });
 }
 
 fn bench_utf8_to_ansi_lossy(c: &mut Criterion) {
-    c.bench_function("UTF-8 to ANSI lossy", |b| b.iter(|| {
-        let _ = AString::from_str_lossy("Hello World!🍣食べたい");
-    }));
+    c.bench_function("UTF-8 to ANSI lossy", |b| {
+        b.iter(|| AString::from_str_lossy("Hello World!🍣食べたい"))
+    });
 }
 
 fn bench_ansi_to_utf8_lossy(c: &mut Criterion) {
     let s = AString::try_from("Hello World").unwrap();
-    c.bench_function("ANSI to UTF-8 lossy", |b| b.iter(|| {
-        let _ = s.to_string_lossy();
-    }));
+    c.bench_function("ANSI to UTF-8 lossy", |b| b.iter(|| s.to_string_lossy()));
 }
 
-criterion_group!(conversion_benches,
+criterion_group!(
+    conversion_benches,
     bench_utf8_to_unicode,
     bench_unicode_to_utf8,
     bench_unicode_to_ansi,

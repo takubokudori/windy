@@ -17,16 +17,17 @@
 //! An example of parsing the outputs of cmd.exe.
 //!
 //! ```rust
-//! use windy::AString;
 //! use std::process::Command;
+//! use windy::AString;
 //!
 //! let o = Command::new("cmd")
 //!     .args(&["/c", "ThisCommandDoesNotExist"])
-//!     .output().unwrap();
+//!     .output()
+//!     .unwrap();
 //! let (stdout, stderr) = unsafe {
 //!     (
 //!         AString::new_unchecked(o.stdout),
-//!         AString::new_unchecked(o.stderr)
+//!         AString::new_unchecked(o.stderr),
 //!     )
 //! };
 //! println!("stdout: {:?}", stdout);
@@ -53,25 +54,14 @@ pub use windy_str::*;
 #[cfg(feature = "no_std")]
 #[allow(unused_imports)]
 pub(crate) mod __lib {
-    pub(crate) use core::cmp;
-    pub(crate) use core::convert;
-    pub(crate) use core::fmt;
-    pub(crate) use core::ops;
-    pub(crate) use core::ptr;
-    pub(crate) use core::slice;
+    pub(crate) use core::{cmp, convert, fmt, ops, ptr, slice};
 }
 
 #[cfg(not(feature = "no_std"))]
 #[allow(unused_imports)]
 pub(crate) mod __lib {
-    pub(crate) use std::cmp;
-    pub(crate) use std::convert;
-    pub(crate) use std::fmt;
-    pub(crate) use std::ops;
-    pub(crate) use std::ptr;
-    pub(crate) use std::slice;
+    pub(crate) use std::{cmp, convert, fmt, ops, ptr, slice};
 }
-
 
 #[allow(unused)]
 pub(crate) const CP_ACP: UINT = 0;
@@ -88,8 +78,10 @@ pub(crate) const ERROR_INSUFFICIENT_BUFFER: DWORD = 0x7a;
 #[allow(unused)]
 pub(crate) const ERROR_NO_UNICODE_TRANSLATION: DWORD = 0x459;
 
-use __lib::fmt;
-use __lib::ptr::{null, null_mut};
+use __lib::{
+    fmt,
+    ptr::{null, null_mut},
+};
 
 /// Represents a conversion error.
 #[derive(Copy, Clone, Ord, PartialOrd, Eq, PartialEq)]
@@ -122,18 +114,15 @@ impl fmt::Debug for ConvertError {
             Self::ConvertToUnicodeError(_) => "ConvertToUnicodeError",
         };
         #[cfg(not(feature = "no_std"))]
-            {
-                let e = std::io::Error::from_raw_os_error(self.to_error_code() as i32);
-                f.debug_struct(st)
-                    .field("", &e)
-                    .finish()
-            }
+        {
+            let e =
+                std::io::Error::from_raw_os_error(self.to_error_code() as i32);
+            f.debug_struct(st).field("", &e).finish()
+        }
         #[cfg(feature = "no_std")]
-            {
-                f.debug_struct(st)
-                    .field("", &self.to_error_code())
-                    .finish()
-            }
+        {
+            f.debug_struct(st).field("", &self.to_error_code()).finish()
+        }
     }
 }
 
@@ -147,25 +136,33 @@ impl fmt::Display for ConvertError {
 }
 
 impl Into<u32> for ConvertError {
-    fn into(self) -> u32 {
-        self.to_error_code()
-    }
+    fn into(self) -> u32 { self.to_error_code() }
 }
 
 impl Into<i32> for ConvertError {
-    fn into(self) -> i32 {
-        self.to_error_code() as i32
-    }
+    fn into(self) -> i32 { self.to_error_code() as i32 }
 }
 
 #[macro_export]
 macro_rules! conv_err {
-    (@utf8 $e:expr) => ($crate::ConvertError::ConvertToUtf8Error($e));
-    (@ansi $e:expr) => ($crate::ConvertError::ConvertToAnsiError($e));
-    (@unicode $e:expr) => ($crate::ConvertError::ConvertToUnicodeError($e));
-    (@utf8) => ($crate::ConvertError::ConvertToUtf8Error);
-    (@ansi) => ($crate::ConvertError::ConvertToAnsiError);
-    (@unicode) => ($crate::ConvertError::ConvertToUnicodeError);
+    (@utf8 $e:expr) => {
+        $crate::ConvertError::ConvertToUtf8Error($e)
+    };
+    (@ansi $e:expr) => {
+        $crate::ConvertError::ConvertToAnsiError($e)
+    };
+    (@unicode $e:expr) => {
+        $crate::ConvertError::ConvertToUnicodeError($e)
+    };
+    (@utf8) => {
+        $crate::ConvertError::ConvertToUtf8Error
+    };
+    (@ansi) => {
+        $crate::ConvertError::ConvertToAnsiError
+    };
+    (@unicode) => {
+        $crate::ConvertError::ConvertToUnicodeError
+    };
 }
 
 pub type ConvertResult<T> = Result<T, ConvertError>;
@@ -244,7 +241,8 @@ pub(crate) fn multi_byte_to_wide_char(
             mb_bytes.len() as i32,
             wc_bytes.as_mut_ptr(),
             wc_bytes.len() as i32,
-        ).map(|x| x as usize)
+        )
+        .map(|x| x as usize)
     }
 }
 
@@ -259,9 +257,9 @@ pub(crate) fn wide_char_to_multi_byte<'a, DC, UDC>(
     default_char: DC,
     used_default_char: UDC,
 ) -> OsResult<usize>
-    where
-        DC: Into<Option<char>>,
-        UDC: Into<Option<&'a mut bool>>
+where
+    DC: Into<Option<char>>,
+    UDC: Into<Option<&'a mut bool>>,
 {
     let dc = default_char.into().map_or(null(), |x| &x);
     unsafe {
@@ -273,8 +271,11 @@ pub(crate) fn wide_char_to_multi_byte<'a, DC, UDC>(
             mb_bytes.as_mut_ptr() as *mut i8,
             mb_bytes.len() as i32,
             dc as *const i8,
-            used_default_char.into().map_or(null_mut(), |x| x as *mut _ as *mut _),
-        ).map(|x| x as usize)
+            used_default_char
+                .into()
+                .map_or(null_mut(), |x| x as *mut _ as *mut _),
+        )
+        .map(|x| x as usize)
     }
 }
 
@@ -284,14 +285,19 @@ pub(crate) fn wide_char_to_multi_byte_wrap(
     wc_flags: DWORD,
     x: &[u16],
     used_default_char: bool,
-) -> OsResult<Vec<u8>>
-{
+) -> OsResult<Vec<u8>> {
     let x = if x.is_empty() { &[0x00] } else { x };
     let l = x.len() * 4;
     let mut ret: Vec<u8> = Vec::with_capacity(l);
-    unsafe { ret.set_len(l); }
+    unsafe {
+        ret.set_len(l);
+    }
     let mut udc_flag = false;
-    let udc = if used_default_char { Some(&mut udc_flag) } else { None };
+    let udc = if used_default_char {
+        Some(&mut udc_flag)
+    } else {
+        None
+    };
 
     match wide_char_to_multi_byte(
         code_page,
@@ -305,14 +311,16 @@ pub(crate) fn wide_char_to_multi_byte_wrap(
             if udc_flag {
                 return Err(ERROR_NO_UNICODE_TRANSLATION);
             }
-            unsafe { ret.set_len(l2); }
+            unsafe {
+                ret.set_len(l2);
+            }
             Ok(ret)
         }
         Err(ERROR_INSUFFICIENT_BUFFER) => {
             #[cfg(feature = "debug_insufficient_buffer")]
-                {
-                    println!("WCTMB: ERROR_INSUFFICIENT_BUFFER returned"); // for debug
-                }
+            {
+                println!("WCTMB: ERROR_INSUFFICIENT_BUFFER returned"); // for debug
+            }
             wide_char_to_multi_byte2(code_page, wc_flags, x, used_default_char)
         }
         Err(x) => Err(x),
@@ -327,21 +335,20 @@ pub(crate) fn wide_char_to_multi_byte2(
     wc_flags: DWORD,
     x: &[u16],
     used_default_char: bool,
-) -> OsResult<Vec<u8>>
-{
+) -> OsResult<Vec<u8>> {
     // get the required buffer size.
-    let l = wide_char_to_multi_byte(
-        code_page,
-        wc_flags,
-        x,
-        &mut [],
-        None,
-        None,
-    )?;
+    let l =
+        wide_char_to_multi_byte(code_page, wc_flags, x, &mut [], None, None)?;
     let mut ret: Vec<u8> = Vec::with_capacity(l);
-    unsafe { ret.set_len(l); }
+    unsafe {
+        ret.set_len(l);
+    }
     let mut udc_flag = false;
-    let udc = if used_default_char { Some(&mut udc_flag) } else { None };
+    let udc = if used_default_char {
+        Some(&mut udc_flag)
+    } else {
+        None
+    };
 
     let l2 = wide_char_to_multi_byte(
         code_page,
@@ -367,23 +374,22 @@ pub(crate) fn multi_byte_to_wide_char_wrap(
     let x = if x.is_empty() { &[0x00] } else { x };
     let l = x.len();
     let mut ret: Vec<u16> = Vec::with_capacity(l);
-    unsafe { ret.set_len(l); }
+    unsafe {
+        ret.set_len(l);
+    }
 
-    match multi_byte_to_wide_char(
-        code_page,
-        mb_flags,
-        x,
-        ret.as_mut_slice(),
-    ) {
+    match multi_byte_to_wide_char(code_page, mb_flags, x, ret.as_mut_slice()) {
         Ok(l2) => {
-            unsafe { ret.set_len(l2); }
+            unsafe {
+                ret.set_len(l2);
+            }
             Ok(ret)
         }
         Err(ERROR_INSUFFICIENT_BUFFER) => {
             #[cfg(feature = "debug_insufficient_buffer")]
-                {
-                    println!("MBTWC: ERROR_INSUFFICIENT_BUFFER returned"); // for debug
-                }
+            {
+                println!("MBTWC: ERROR_INSUFFICIENT_BUFFER returned"); // for debug
+            }
             multi_byte_to_wide_char2(code_page, mb_flags, x)
         }
         Err(x) => Err(x),
@@ -399,21 +405,14 @@ pub(crate) fn multi_byte_to_wide_char2(
     x: &[u8],
 ) -> OsResult<Vec<u16>> {
     // get the required buffer size.
-    let l = multi_byte_to_wide_char(
-        code_page,
-        mb_flags,
-        x,
-        &mut [],
-    )?;
+    let l = multi_byte_to_wide_char(code_page, mb_flags, x, &mut [])?;
     let mut ret: Vec<u16> = Vec::with_capacity(l);
-    unsafe { ret.set_len(l); }
+    unsafe {
+        ret.set_len(l);
+    }
 
-    let l2 = multi_byte_to_wide_char(
-        code_page,
-        mb_flags,
-        x,
-        ret.as_mut_slice(),
-    )?;
+    let l2 =
+        multi_byte_to_wide_char(code_page, mb_flags, x, ret.as_mut_slice())?;
     assert_eq!(l, l2);
     Ok(ret)
 }

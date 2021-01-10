@@ -3,13 +3,25 @@
 #[cfg(test)]
 #[cfg(not(feature = "no_std"))]
 pub mod tests {
-    use windy::*;
     use std::convert::TryFrom;
+    use windy::*;
 
     const ERROR_NO_UNICODE_TRANSLATION: u32 = 1113;
-    macro_rules! wn { ($x:expr)=> (unsafe { WString::new_unchecked($x) });}
-    macro_rules! wnc { ($x:expr)=>(unsafe { WString::new_c_unchecked($x) });}
-    macro_rules! an { ($x:expr)=> (unsafe { AString::new_unchecked($x) });}
+    macro_rules! wn {
+        ($x:expr) => {
+            unsafe { WString::new_unchecked($x) }
+        };
+    }
+    macro_rules! wnc {
+        ($x:expr) => {
+            unsafe { WString::new_c_unchecked($x) }
+        };
+    }
+    macro_rules! an {
+        ($x:expr) => {
+            unsafe { AString::new_unchecked($x) }
+        };
+    }
 
     #[test]
     fn test_wstring() {
@@ -25,9 +37,12 @@ pub mod tests {
         assert_eq!(&[0x74, 0x65, 0x00], x.as_bytes_with_nul());
         let x = wnc!(vec![0x74, 0x00, 0x65, 0x00, 0x73, 0x00, 0x74, 0x00]); // test
         assert_eq!(&[0x74, 0x65, 0x73, 0x74, 0x00], x.as_bytes_with_nul());
-        let x = wnc!(vec![0x74, 0x00, 0x65, 0x00, 0x73, 0x00, 0x74, 0x00, 0x00]); // test\0 (odd)
+        let x =
+            wnc!(vec![0x74, 0x00, 0x65, 0x00, 0x73, 0x00, 0x74, 0x00, 0x00]); // test\0 (odd)
         assert_eq!(&[0x74, 0x65, 0x73, 0x74, 0x00], x.as_bytes_with_nul());
-        let x = wnc!(vec![0x74, 0x00, 0x65, 0x00, 0x73, 0x00, 0x74, 0x00, 0x00, 0x00]); // test\0\0 (even)
+        let x = wnc!(vec![
+            0x74, 0x00, 0x65, 0x00, 0x73, 0x00, 0x74, 0x00, 0x00, 0x00
+        ]); // test\0\0 (even)
         assert_eq!(&[0x74, 0x65, 0x73, 0x74, 0x00], x.as_bytes_with_nul());
         assert_eq!(x.as_bytes_with_nul(), x.as_c_str().to_bytes_with_nul());
         assert_eq!(x, WString::try_from("test").unwrap());
@@ -100,13 +115,13 @@ pub mod tests {
         // UTF-8 -> ANSI
         let _ = AString::from_str_lossy("スペシャル").to_string_lossy();
         let sa = AString::try_from("test").unwrap();
-        assert_eq!("test", sa.to_string().unwrap());  // ANSI -> UTF-8
+        assert_eq!("test", sa.to_string().unwrap()); // ANSI -> UTF-8
         assert_eq!("test", sa.to_string_lossy()); // ANSI -> UTF-8 lossy
-        // UTF-8 -> Unicode
+                                                  // UTF-8 -> Unicode
         let sw = WString::try_from("test").unwrap();
         assert_eq!("test", sw.to_string().unwrap()); // Unicode -> UTF-8
         assert_eq!("test", sw.to_string_lossy()); // Unicode -> UTF-8 lossy
-        // Unicode -> ANSI
+                                                  // Unicode -> ANSI
         let sa = sw.to_astring().unwrap();
         assert_eq!("test", sa.to_string().unwrap());
         assert_eq!("test", sa.to_string_lossy());
@@ -114,7 +129,7 @@ pub mod tests {
         let sw = sa.to_wstring().unwrap();
         assert_eq!("test", sw.to_string().unwrap()); // ANSI -> UTF-8
         assert_eq!("test", sw.to_string_lossy()); // ANSI -> UTF-8 lossy
-        // ANSI -> Unicode lossy
+                                                  // ANSI -> Unicode lossy
         let sw = sa.to_wstring_lossy();
         assert_eq!("test", sw.to_string().unwrap()); // ANSI -> UTF-8
         assert_eq!("test", sw.to_string_lossy()); // ANSI -> UTF-8 lossy
@@ -123,13 +138,19 @@ pub mod tests {
     #[test]
     fn test_string_conversion_invalid() {
         // UTF-8 -> ANSI (Invalid)
-        assert_eq!(Err(conv_err!(@ansi ERROR_NO_UNICODE_TRANSLATION)), AString::try_from("スペシャルtest🍣"));
+        assert_eq!(
+            Err(conv_err!(@ansi ERROR_NO_UNICODE_TRANSLATION)),
+            AString::try_from("スペシャルtest🍣")
+        );
         // UTF-8 -> Unicode
         let sw = WString::try_from("スペシャルtest🍣").unwrap();
         assert_eq!("スペシャルtest🍣", sw.to_string().unwrap()); // Unicode -> UTF-8
         assert_eq!("スペシャルtest🍣", sw.to_string_lossy()); // Unicode -> UTF-8 lossy
-        // Unicode -> ANSI (Invalid)
-        assert_eq!(Err(conv_err!(@ansi ERROR_NO_UNICODE_TRANSLATION)), sw.to_astring());
+                                                              // Unicode -> ANSI (Invalid)
+        assert_eq!(
+            Err(conv_err!(@ansi ERROR_NO_UNICODE_TRANSLATION)),
+            sw.to_astring()
+        );
         let _ = sw.to_astring_lossy().to_string_lossy();
     }
 
@@ -144,10 +165,34 @@ pub mod tests {
         assert_eq!("", &AString::from_str_lossy("").to_string().unwrap());
         assert_eq!("", &AString::from_str_lossy("").to_string_lossy());
 
-        assert_eq!("", &WString::from_str_lossy("").to_astring().unwrap().to_string_lossy());
-        assert_eq!("", &WString::from_str_lossy("").to_astring_lossy().to_string_lossy());
-        assert_eq!("", &AString::from_str_lossy("").to_wstring().unwrap().to_string().unwrap());
-        assert_eq!("", &AString::from_str_lossy("").to_wstring_lossy().to_string().unwrap());
+        assert_eq!(
+            "",
+            &WString::from_str_lossy("")
+                .to_astring()
+                .unwrap()
+                .to_string_lossy()
+        );
+        assert_eq!(
+            "",
+            &WString::from_str_lossy("")
+                .to_astring_lossy()
+                .to_string_lossy()
+        );
+        assert_eq!(
+            "",
+            &AString::from_str_lossy("")
+                .to_wstring()
+                .unwrap()
+                .to_string()
+                .unwrap()
+        );
+        assert_eq!(
+            "",
+            &AString::from_str_lossy("")
+                .to_wstring_lossy()
+                .to_string()
+                .unwrap()
+        );
     }
 }
 

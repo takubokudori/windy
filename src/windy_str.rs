@@ -1,10 +1,10 @@
-use crate::*;
-use crate::__lib::cmp::Ordering;
-use crate::__lib::fmt::Write;
-use crate::__lib::slice;
+use crate::{
+    __lib::{cmp::Ordering, fmt::Write, slice},
+    *,
+};
 
 macro_rules! str_impl_debug {
-    ($x:ident) => (
+    ($x:ident) => {
         impl fmt::Debug for $x {
             fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
                 f.write_char('"')?;
@@ -19,7 +19,7 @@ macro_rules! str_impl_debug {
                 f.write_char('"')
             }
         }
-    )
+    };
 }
 
 #[repr(C)]
@@ -52,7 +52,12 @@ impl WStr {
 
     #[inline]
     pub fn to_u8_bytes_with_nul(&self) -> &[u8] {
-        unsafe { slice::from_raw_parts(self.inner.as_ptr() as *const u8, self.inner.len() * 2) }
+        unsafe {
+            slice::from_raw_parts(
+                self.inner.as_ptr() as *const u8,
+                self.inner.len() * 2,
+            )
+        }
     }
 
     pub fn to_u8_bytes(&self) -> &[u8] {
@@ -71,9 +76,10 @@ impl WStr {
                 WC_NO_BEST_FIT_CHARS | WC_ERR_INVALID_CHARS,
                 self.to_bytes_with_nul(),
                 false,
-            ).map_err(conv_err!(@utf8))?;
+            )
+            .map_err(conv_err!(@utf8))?;
             mb.set_len(mb.len() - 1); // remove NULL
-            // valid UTF-8 string
+                                      // valid UTF-8 string
             Ok(String::from_utf8_unchecked(mb))
         }
     }
@@ -89,9 +95,11 @@ impl WStr {
                 WC_NO_BEST_FIT_CHARS,
                 self.to_bytes_with_nul(),
                 false,
-            ).map_err(conv_err!(@utf8)).unwrap();
+            )
+            .map_err(conv_err!(@utf8))
+            .unwrap();
             mb.set_len(mb.len() - 1); // remove NULL
-            // valid UTF-8 string
+                                      // valid UTF-8 string
             String::from_utf8_unchecked(mb)
         }
     }
@@ -113,7 +121,8 @@ impl WStr {
             WC_NO_BEST_FIT_CHARS,
             self.to_bytes_with_nul(),
             true,
-        ).map_err(conv_err!(@ansi))?;
+        )
+        .map_err(conv_err!(@ansi))?;
         // valid ANSI string
         unsafe { Ok(AString::new_unchecked(mb)) }
     }
@@ -135,7 +144,8 @@ impl WStr {
             WC_NO_BEST_FIT_CHARS,
             self.to_bytes_with_nul(),
             false,
-        ).unwrap();
+        )
+        .unwrap();
         // valid ANSI string
         unsafe { AString::new_unchecked(mb) }
     }
@@ -154,7 +164,9 @@ impl WStr {
     /// # Safety
     /// `bytes` must be a correct unicode string.
     #[inline]
-    pub unsafe fn from_bytes_with_nul_unchecked_mut(bytes: &mut [u16]) -> &mut Self {
+    pub unsafe fn from_bytes_with_nul_unchecked_mut(
+        bytes: &mut [u16],
+    ) -> &mut Self {
         &mut *(bytes as *mut [u16] as *mut Self)
     }
 
@@ -170,9 +182,14 @@ impl WStr {
     ///
     /// # Safety
     /// `ptr` must be a null-terminated unicode string.
-    pub unsafe fn from_raw_s<'a>(ptr: *const wchar_t, mut len: usize) -> &'a Self {
+    pub unsafe fn from_raw_s<'a>(
+        ptr: *const wchar_t,
+        mut len: usize,
+    ) -> &'a Self {
         let len2 = wcsnlen(ptr, len);
-        if len2 < len { len = len2; }
+        if len2 < len {
+            len = len2;
+        }
         Self::from_raw_s_unchecked(ptr, len)
     }
 
@@ -181,7 +198,10 @@ impl WStr {
     /// # Safety
     /// `ptr` must be a null-terminated unicode string.
     #[inline]
-    pub unsafe fn from_raw_s_unchecked<'a>(ptr: *const wchar_t, len: usize) -> &'a Self {
+    pub unsafe fn from_raw_s_unchecked<'a>(
+        ptr: *const wchar_t,
+        len: usize,
+    ) -> &'a Self {
         let slice = slice::from_raw_parts(ptr, len as usize + 1);
         Self::from_bytes_with_nul_unchecked(slice)
     }
@@ -215,7 +235,9 @@ impl AStr {
     pub fn as_ptr(&self) -> *const i8 { self.inner.as_ptr() as *const i8 }
 
     #[inline]
-    pub fn as_mut_ptr(&mut self) -> *mut i8 { self.inner.as_mut_ptr() as *mut i8 }
+    pub fn as_mut_ptr(&mut self) -> *mut i8 {
+        self.inner.as_mut_ptr() as *mut i8
+    }
 
     #[inline]
     pub fn as_u8_ptr(&self) -> *const u8 { self.inner.as_ptr() }
@@ -270,7 +292,8 @@ impl AStr {
             CP_ACP,
             MB_ERR_INVALID_CHARS,
             self.to_bytes(),
-        ).map_err(conv_err!(@unicode))?;
+        )
+        .map_err(conv_err!(@unicode))?;
         // valid unicode string
         unsafe { Ok(WString::_new(wc)) }
     }
@@ -287,11 +310,9 @@ impl AStr {
     /// ```
     #[cfg(not(feature = "no_std"))]
     pub fn to_wstring_lossy(&self) -> WString {
-        let wc = multi_byte_to_wide_char_wrap(
-            CP_ACP,
-            0,
-            self.to_bytes(),
-        ).map_err(conv_err!(@unicode)).unwrap();
+        let wc = multi_byte_to_wide_char_wrap(CP_ACP, 0, self.to_bytes())
+            .map_err(conv_err!(@unicode))
+            .unwrap();
         // valid unicode string
         unsafe { WString::_new(wc) }
     }
@@ -310,7 +331,9 @@ impl AStr {
     /// # Safety
     /// `bytes` must be a correct ANSI string.
     #[inline]
-    pub unsafe fn from_bytes_with_nul_unchecked_mut(bytes: &mut [u8]) -> &mut Self {
+    pub unsafe fn from_bytes_with_nul_unchecked_mut(
+        bytes: &mut [u8],
+    ) -> &mut Self {
         &mut *(bytes as *mut [u8] as *mut Self)
     }
 
@@ -328,7 +351,9 @@ impl AStr {
     /// `ptr` must be a null-terminated ANSI string.
     pub unsafe fn from_raw_s<'a>(ptr: *const u8, mut len: usize) -> &'a Self {
         let len2 = strnlen(ptr, len);
-        if len2 < len { len = len2; }
+        if len2 < len {
+            len = len2;
+        }
         Self::from_raw_s_unchecked(ptr, len)
     }
 
@@ -337,16 +362,17 @@ impl AStr {
     /// # Safety
     /// `ptr` must be a null-terminated ANSI string.
     #[inline]
-    pub unsafe fn from_raw_s_unchecked<'a>(ptr: *const u8, len: usize) -> &'a Self {
+    pub unsafe fn from_raw_s_unchecked<'a>(
+        ptr: *const u8,
+        len: usize,
+    ) -> &'a Self {
         let slice = slice::from_raw_parts(ptr, len as usize + 1);
         Self::from_bytes_with_nul_unchecked(slice)
     }
 }
 
 impl PartialEq for AStr {
-    fn eq(&self, other: &Self) -> bool {
-        self.to_bytes().eq(other.to_bytes())
-    }
+    fn eq(&self, other: &Self) -> bool { self.to_bytes().eq(other.to_bytes()) }
 }
 
 impl Eq for AStr {}
