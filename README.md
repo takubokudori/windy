@@ -15,7 +15,7 @@ Add the following lines to your Cargo.toml:
 
 ```
 [dependencies]
-windy = "0.1.1"
+windy = "0.1.2"
 ```
 
 # Example
@@ -45,7 +45,7 @@ fn main() {
 
 If you want to use no_std, turn on the no_std feature.
 
-If no_std feature is on, AString and WString are not available.
+AString and WString are not available when no_std feature is on.
 
 # License
 

@@ -11,28 +11,14 @@
 //! - ANSI string(AString)
 //! - Unicode string(WString)
 //! - Interconversion between AString, WString and String.
+//! - no_std support
 //!
-//! # Example
+//! # no_std support
 //!
-//! An example of parsing the outputs of cmd.exe.
+//! If you want to use no_std, turn on the no_std feature.
 //!
-//! ```rust
-//! use std::process::Command;
-//! use windy::AString;
+//! AString and WString are not available when no_std feature is on.
 //!
-//! let o = Command::new("cmd")
-//!     .args(&["/c", "ThisCommandDoesNotExist"])
-//!     .output()
-//!     .unwrap();
-//! let (stdout, stderr) = unsafe {
-//!     (
-//!         AString::new_unchecked(o.stdout),
-//!         AString::new_unchecked(o.stderr),
-//!     )
-//! };
-//! println!("stdout: {:?}", stdout);
-//! println!("stderr: {:?}", stderr);
-//! ```
 //! # License
 //!
 //! This software is released under the MIT or Apache-2.0 License, see LICENSE-MIT or LICENSE-APACHE.

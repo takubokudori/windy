@@ -196,9 +196,42 @@ pub mod tests {
     }
 }
 
+/// Tests no_std.
 #[cfg(test)]
-#[cfg(feature = "no_std")]
-pub mod tests {
+pub mod tests2 {
+    use windy::*;
+
     #[test]
-    fn test_astr() {}
+    fn test_wstr() {
+        let x = &mut [0x0074, 0x0065, 0x0073, 0x0074, 0x0000];
+        unsafe {
+            let s = WStr::from_raw(x.as_mut_ptr());
+            assert_eq!(x, s.to_bytes_with_nul());
+            let s = WStr::from_raw_s(x.as_mut_ptr(), 3);
+            assert_eq!(&x[..4], s.to_bytes_with_nul());
+            let s = WStr::from_raw_s(x.as_mut_ptr(), 4);
+            assert_eq!(x, s.to_bytes_with_nul());
+            let s = WStr::from_raw_s(x.as_mut_ptr(), 5);
+            assert_eq!(x, s.to_bytes_with_nul());
+            let s = WStr::from_raw_s(x.as_mut_ptr(), 6);
+            assert_eq!(x, s.to_bytes_with_nul());
+        }
+    }
+
+    #[test]
+    fn test_astr() {
+        let x = &mut [0x74, 0x65, 0x73, 0x74, 0x00];
+        unsafe {
+            let s = AStr::from_raw(x.as_mut_ptr());
+            assert_eq!(x, s.to_bytes_with_nul());
+            let s = AStr::from_raw_s(x.as_mut_ptr(), 3);
+            assert_eq!(&x[..4], s.to_bytes_with_nul());
+            let s = AStr::from_raw_s(x.as_mut_ptr(), 4);
+            assert_eq!(x, s.to_bytes_with_nul());
+            let s = AStr::from_raw_s(x.as_mut_ptr(), 5);
+            assert_eq!(x, s.to_bytes_with_nul());
+            let s = AStr::from_raw_s(x.as_mut_ptr(), 6);
+            assert_eq!(x, s.to_bytes_with_nul());
+        }
+    }
 }
