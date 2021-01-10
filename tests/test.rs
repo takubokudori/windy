@@ -34,15 +34,15 @@ pub mod tests {
         assert_ne!(Ok(x), WString::try_from("Test"));
         let x = &mut [0x0074, 0x0065, 0x0073, 0x0074, 0x0000];
         unsafe {
-            let s = WString::from_raw(x.as_mut_ptr());
+            let s = WStr::from_raw(x.as_mut_ptr());
             assert_eq!("test", s.to_string_lossy());
-            let s = WString::from_raw_s(x.as_mut_ptr(), 3);
+            let s = WStr::from_raw_s(x.as_mut_ptr(), 3);
             assert_eq!("tes", s.to_string_lossy());
-            let s = WString::from_raw_s(x.as_mut_ptr(), 4);
+            let s = WStr::from_raw_s(x.as_mut_ptr(), 4);
             assert_eq!("test", s.to_string_lossy());
-            let s = WString::from_raw_s(x.as_mut_ptr(), 5);
+            let s = WStr::from_raw_s(x.as_mut_ptr(), 5);
             assert_eq!("test", s.to_string_lossy());
-            let s = WString::from_raw_s(x.as_mut_ptr(), 6);
+            let s = WStr::from_raw_s(x.as_mut_ptr(), 6);
             assert_eq!("test", s.to_string_lossy());
             let s = WString::clone_from_raw(x.as_mut_ptr());
             assert_eq!("test", s.to_string_lossy());
@@ -72,15 +72,15 @@ pub mod tests {
         assert_ne!(Ok(x), AString::try_from("Te"));
         let x = &mut [0x74, 0x65, 0x73, 0x74, 0x00];
         unsafe {
-            let s = AString::from_raw(x.as_mut_ptr());
+            let s = AStr::from_raw(x.as_mut_ptr());
             assert_eq!("test", s.to_string_lossy());
-            let s = AString::from_raw_s(x.as_mut_ptr(), 3);
+            let s = AStr::from_raw_s(x.as_mut_ptr(), 3);
             assert_eq!("tes", s.to_string_lossy());
-            let s = AString::from_raw_s(x.as_mut_ptr(), 4);
+            let s = AStr::from_raw_s(x.as_mut_ptr(), 4);
             assert_eq!("test", s.to_string_lossy());
-            let s = AString::from_raw_s(x.as_mut_ptr(), 5);
+            let s = AStr::from_raw_s(x.as_mut_ptr(), 5);
             assert_eq!("test", s.to_string_lossy());
-            let s = AString::from_raw_s(x.as_mut_ptr(), 6);
+            let s = AStr::from_raw_s(x.as_mut_ptr(), 6);
             assert_eq!("test", s.to_string_lossy());
             let s = AString::clone_from_raw(x.as_mut_ptr());
             assert_eq!("test", s.to_string_lossy());
@@ -154,10 +154,6 @@ pub mod tests {
 #[cfg(test)]
 #[cfg(feature = "no_std")]
 pub mod tests {
-
     #[test]
-    fn test_astr(){
-
-    }
-
+    fn test_astr() {}
 }

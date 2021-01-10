@@ -29,16 +29,6 @@ pub struct WStr {
 
 impl WStr {
     #[inline]
-    pub unsafe fn from_bytes_with_nul_unchecked(bytes: &[u16]) -> &Self {
-        &*(bytes as *const [u16] as *const Self)
-    }
-
-    #[inline]
-    pub unsafe fn from_bytes_with_nul_unchecked_mut(bytes: &mut [u16]) -> &mut Self {
-        &mut *(bytes as *const [u16] as *mut Self)
-    }
-
-    #[inline]
     pub fn as_ptr(&self) -> *const wchar_t { self.inner.as_ptr() }
 
     #[inline]
@@ -149,6 +139,52 @@ impl WStr {
         // valid ANSI string
         unsafe { AString::new_unchecked(mb) }
     }
+
+    /// Creates a new `&WStr` from `bytes`.
+    ///
+    /// # Safety
+    /// `bytes` must be a correct unicode string.
+    #[inline]
+    pub unsafe fn from_bytes_with_nul_unchecked(bytes: &[u16]) -> &Self {
+        &*(bytes as *const [u16] as *const Self)
+    }
+
+    /// Creates a new `&WStr` from `bytes`.
+    ///
+    /// # Safety
+    /// `bytes` must be a correct unicode string.
+    #[inline]
+    pub unsafe fn from_bytes_with_nul_unchecked_mut(bytes: &mut [u16]) -> &mut Self {
+        &mut *(bytes as *mut [u16] as *mut Self)
+    }
+
+    /// Creates &[`WStr`] from `ptr`.
+    ///
+    /// # Safety
+    /// `ptr` must be a null-terminated unicode string.
+    pub unsafe fn from_raw<'a>(ptr: *const wchar_t) -> &'a Self {
+        Self::from_raw_s_unchecked(ptr, wcslen(ptr))
+    }
+
+    /// Creates &[`WStr`] from `ptr` and `len`.
+    ///
+    /// # Safety
+    /// `ptr` must be a null-terminated unicode string.
+    pub unsafe fn from_raw_s<'a>(ptr: *const wchar_t, mut len: usize) -> &'a Self {
+        let len2 = wcsnlen(ptr, len);
+        if len2 < len { len = len2; }
+        Self::from_raw_s_unchecked(ptr, len)
+    }
+
+    /// Creates &[`WStr`] from `ptr` and `len` without length check.
+    ///
+    /// # Safety
+    /// `ptr` must be a null-terminated unicode string.
+    #[inline]
+    pub unsafe fn from_raw_s_unchecked<'a>(ptr: *const wchar_t, len: usize) -> &'a Self {
+        let slice = slice::from_raw_parts(ptr, len as usize + 1);
+        Self::from_bytes_with_nul_unchecked(slice)
+    }
 }
 
 impl PartialEq for WStr {
@@ -175,16 +211,6 @@ pub struct AStr {
 }
 
 impl AStr {
-    #[inline]
-    pub unsafe fn from_bytes_with_nul_unchecked(bytes: &[u8]) -> &Self {
-        &*(bytes as *const [u8] as *const Self)
-    }
-
-    #[inline]
-    pub unsafe fn from_bytes_with_nul_unchecked_mut(bytes: &mut [u8]) -> &mut Self {
-        &mut *(bytes as *const [u8] as *mut Self)
-    }
-
     #[inline]
     pub fn as_ptr(&self) -> *const i8 { self.inner.as_ptr() as *const i8 }
 
@@ -268,6 +294,52 @@ impl AStr {
         ).map_err(conv_err!(@unicode)).unwrap();
         // valid unicode string
         unsafe { WString::_new(wc) }
+    }
+
+    /// Creates a new `&AStr` from `bytes`.
+    ///
+    /// # Safety
+    /// `bytes` must be a correct ANSI string.
+    #[inline]
+    pub unsafe fn from_bytes_with_nul_unchecked(bytes: &[u8]) -> &Self {
+        &*(bytes as *const [u8] as *const Self)
+    }
+
+    /// Creates a new `mut &AStr` from `bytes`.
+    ///
+    /// # Safety
+    /// `bytes` must be a correct ANSI string.
+    #[inline]
+    pub unsafe fn from_bytes_with_nul_unchecked_mut(bytes: &mut [u8]) -> &mut Self {
+        &mut *(bytes as *mut [u8] as *mut Self)
+    }
+
+    /// Creates &[`AStr`] from `ptr`.
+    ///
+    /// # Safety
+    /// `ptr` must be a null-terminated ANSI string.
+    pub unsafe fn from_raw<'a>(ptr: *const u8) -> &'a Self {
+        Self::from_raw_s_unchecked(ptr, strlen(ptr))
+    }
+
+    /// Creates &[`AStr`] from `ptr` and `len`.
+    ///
+    /// # Safety
+    /// `ptr` must be a null-terminated ANSI string.
+    pub unsafe fn from_raw_s<'a>(ptr: *const u8, mut len: usize) -> &'a Self {
+        let len2 = strnlen(ptr, len);
+        if len2 < len { len = len2; }
+        Self::from_raw_s_unchecked(ptr, len)
+    }
+
+    /// Creates &[`AStr`] from `ptr` and `len` without length check.
+    ///
+    /// # Safety
+    /// `ptr` must be a null-terminated ANSI string.
+    #[inline]
+    pub unsafe fn from_raw_s_unchecked<'a>(ptr: *const u8, len: usize) -> &'a Self {
+        let slice = slice::from_raw_parts(ptr, len as usize + 1);
+        Self::from_bytes_with_nul_unchecked(slice)
     }
 }
 

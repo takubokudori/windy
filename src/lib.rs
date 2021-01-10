@@ -56,7 +56,6 @@ pub(crate) mod __lib {
     pub(crate) use core::cmp;
     pub(crate) use core::convert;
     pub(crate) use core::fmt;
-    pub(crate) use core::mem;
     pub(crate) use core::ops;
     pub(crate) use core::ptr;
     pub(crate) use core::slice;
@@ -68,7 +67,6 @@ pub(crate) mod __lib {
     pub(crate) use std::cmp;
     pub(crate) use std::convert;
     pub(crate) use std::fmt;
-    pub(crate) use std::mem;
     pub(crate) use std::ops;
     pub(crate) use std::ptr;
     pub(crate) use std::slice;
@@ -145,7 +143,6 @@ impl std::error::Error for ConvertError {}
 impl fmt::Display for ConvertError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         __lib::fmt::Debug::fmt(self, f)
-        // format!("{:?}", self).fmt(f)
     }
 }
 

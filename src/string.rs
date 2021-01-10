@@ -3,7 +3,6 @@
 use crate::*;
 use crate::__lib::convert::{TryFrom, TryInto};
 use crate::__lib::fmt::Write;
-use crate::__lib::mem::ManuallyDrop;
 use crate::__lib::ops;
 use crate::__lib::slice;
 
@@ -56,8 +55,8 @@ impl WString {
 
     /// Returns &mut [`WStr`].
     #[inline]
-    pub unsafe fn as_mut_c_str(&mut self) -> &mut WStr {
-        WStr::from_bytes_with_nul_unchecked_mut(self.as_bytes_with_nul_mut())
+    pub fn as_mut_c_str(&mut self) -> &mut WStr {
+        unsafe { WStr::from_bytes_with_nul_unchecked_mut(self.as_bytes_with_nul_mut()) }
     }
 
     #[inline]
@@ -72,9 +71,15 @@ impl WString {
     pub fn is_empty(&self) -> bool { self.len() == 0 }
 
     /// Creates [`WString`] from [`Vec`]<u16> without any encoding checks.
+    ///
+    /// # Safety
+    /// `v` must be a correct unicode string.
     pub unsafe fn new_unchecked<T: Into<Vec<u16>>>(v: T) -> Self { Self::_new(v.into()) }
 
     /// Creates [`WString`] from [`Vec`]<u8> without any encoding checks.
+    ///
+    /// # Safety
+    /// `v` must be a correct unicode string.
     pub unsafe fn new_c_unchecked<T: Into<Vec<u8>>>(v: T) -> Self { Self::_new2(v.into()) }
 
     #[inline]
@@ -97,6 +102,8 @@ impl WString {
         Self::_new(x)
     }
 
+    /// Creates [`WString`] from `v` without a null-terminated check and any encoding checks.
+    ///
     /// # Safety
     /// `v` must be a null-terminated unicode string.
     pub unsafe fn new_nul_unchecked<T: Into<Vec<u16>>>(v: T) -> Self {
@@ -104,6 +111,7 @@ impl WString {
         Self::_new_nul_unchecked(v)
     }
 
+    #[inline]
     unsafe fn _new_nul_unchecked(v: Vec<u16>) -> Self {
         Self { inner: v.into_boxed_slice() }
     }
@@ -117,6 +125,7 @@ impl WString {
     /// let s = WString::from_str("test🍣").unwrap();
     /// println!("{:?}", s);
     /// ```
+    #[allow(clippy::should_implement_trait)]
     pub fn from_str(x: &str) -> ConvertResult<Self> {
         let wb = multi_byte_to_wide_char_wrap(
             CP_UTF8,
@@ -146,33 +155,7 @@ impl WString {
         unsafe { Self::_new(wb) }
     }
 
-    /// Converts `ptr` string to [`WString`].
-    ///
-    /// # Safety
-    /// `ptr` must be a null-terminated unicode string.
-    pub unsafe fn from_raw(ptr: *mut wchar_t) -> ManuallyDrop<Self> {
-        Self::from_raw_s_unchecked(ptr, wcslen(ptr))
-    }
-
-    pub unsafe fn from_raw_s(ptr: *mut wchar_t, mut len: usize) -> ManuallyDrop<Self> {
-        let len2 = wcsnlen(ptr, len);
-        if len2 < len { len = len2; }
-        Self::from_raw_s_unchecked(ptr, len)
-    }
-
-    /// Converts `ptr` string to [`WString`] without length check.
-    ///
-    /// # Safety
-    /// `ptr` must be a null-terminated ANSI string and `ptr[len - 1] == '\0'`.
-    #[inline]
-    pub unsafe fn from_raw_s_unchecked(ptr: *mut wchar_t, len: usize) -> ManuallyDrop<Self> {
-        let slice = slice::from_raw_parts_mut(ptr, len as usize + 1);
-        ManuallyDrop::new(
-            Self { inner: Box::from_raw(slice) }
-        )
-    }
-
-    /// Converts `ptr` string to [`WString`].
+    /// Creates [`WString`] from `ptr`.
     ///
     /// # Safety
     /// `ptr` must be a null-terminated unicode string.
@@ -180,16 +163,20 @@ impl WString {
         Self::clone_from_raw_s_unchecked(ptr, wcslen(ptr))
     }
 
+    /// Creates [`WString`] from `ptr` and `len`.
+    ///
+    /// # Safety
+    /// `ptr` must be a null-terminated unicode string.
     pub unsafe fn clone_from_raw_s(ptr: *mut wchar_t, mut len: usize) -> Self {
         let len2 = wcsnlen(ptr, len);
         if len2 < len { len = len2; }
         Self::clone_from_raw_s_unchecked(ptr, len)
     }
 
-    /// Converts `ptr` string to [`WString`] without length check.
+    /// Creates [`WString`] from `ptr` and `len` without length check.
     ///
     /// # Safety
-    /// `ptr` must be a null-terminated ANSI string and `ptr[len - 1] == '\0'`.
+    /// `ptr` must be a null-terminated unicode string.
     #[inline]
     pub unsafe fn clone_from_raw_s_unchecked(ptr: *mut wchar_t, len: usize) -> Self {
         let slice = slice::from_raw_parts_mut(ptr, len as usize + 1);
@@ -315,8 +302,10 @@ impl AString {
 
     /// Returns &mut [`AStr`].
     #[inline]
-    pub unsafe fn as_mut_c_str(&mut self) -> &mut AStr {
-        AStr::from_bytes_with_nul_unchecked_mut(self.as_bytes_with_nul_mut())
+    pub fn as_mut_c_str(&mut self) -> &mut AStr {
+        unsafe {
+            AStr::from_bytes_with_nul_unchecked_mut(self.as_bytes_with_nul_mut())
+        }
     }
 
     #[inline]
@@ -331,6 +320,9 @@ impl AString {
     pub fn is_empty(&self) -> bool { self.len() == 0 }
 
     /// Creates [`AString`] from `v` without any encoding checks.
+    ///
+    /// # Safety
+    /// `v` must be a correct ANSI string.
     pub unsafe fn new_unchecked<T: Into<Vec<u8>>>(v: T) -> Self {
         let mut v = v.into();
         let len = strnlen(v.as_ptr(), v.len());
@@ -342,7 +334,7 @@ impl AString {
         Self::new_nul_unchecked(v)
     }
 
-    /// Creates [`AString`] from `v` without a null-terminated check.
+    /// Creates [`AString`] from `v` without a null-terminated check and any encoding checks.
     ///
     /// # Safety
     /// `v` must be a null-terminated ANSI string.
@@ -361,6 +353,7 @@ impl AString {
     /// let s = AString::from_str("test").unwrap();
     /// println!("{:?}", s);
     /// ```
+    #[allow(clippy::should_implement_trait)]
     pub fn from_str(x: &str) -> ConvertResult<Self> {
         // UTF-8 -> Unicode -> ANSI
         WString::try_from(x)?.to_astring()
@@ -380,33 +373,7 @@ impl AString {
         WString::from_str_lossy(x).to_astring_lossy()
     }
 
-    /// Converts `ptr` string to [`AString`].
-    ///
-    /// # Safety
-    /// `ptr` must be a null-terminated ANSI string.
-    pub unsafe fn from_raw(ptr: *mut u8) -> ManuallyDrop<Self> {
-        Self::from_raw_s_unchecked(ptr, strlen(ptr))
-    }
-
-    pub unsafe fn from_raw_s(ptr: *mut u8, mut len: usize) -> ManuallyDrop<Self> {
-        let len2 = strnlen(ptr, len);
-        if len2 < len { len = len2; }
-        Self::from_raw_s_unchecked(ptr, len)
-    }
-
-    /// Converts `ptr` string to [`AString`] without length check.
-    ///
-    /// # Safety
-    /// `ptr` must be a null-terminated ANSI string and `ptr[len - 1] == '\0'`.
-    #[inline]
-    pub unsafe fn from_raw_s_unchecked(ptr: *mut u8, len: usize) -> ManuallyDrop<Self> {
-        let slice = slice::from_raw_parts_mut(ptr, len as usize + 1);
-        ManuallyDrop::new(
-            Self { inner: Box::from_raw(slice) }
-        )
-    }
-
-    /// Converts `ptr` string to [`AString`].
+    /// Creates [`AString`] from `ptr`.
     ///
     /// # Safety
     /// `ptr` must be a null-terminated ANSI string.
@@ -414,16 +381,20 @@ impl AString {
         Self::clone_from_raw_s_unchecked(ptr, strlen(ptr))
     }
 
+    /// Creates [`AString`] from `ptr` and `len`.
+    ///
+    /// # Safety
+    /// `ptr` must be a null-terminated ANSI string.
     pub unsafe fn clone_from_raw_s(ptr: *mut u8, mut len: usize) -> Self {
         let len2 = strnlen(ptr, len);
         if len2 < len { len = len2; }
         Self::clone_from_raw_s_unchecked(ptr, len)
     }
 
-    /// Converts `ptr` string to [`AString`] without length check.
+    /// Creates [`AString`] from `ptr` and `len` without length check.
     ///
     /// # Safety
-    /// `ptr` must be a null-terminated ANSI string and `ptr[len - 1] == '\0'`.
+    /// `ptr` must be a null-terminated ANSI string.
     #[inline]
     pub unsafe fn clone_from_raw_s_unchecked(ptr: *mut u8, len: usize) -> Self {
         let slice = slice::from_raw_parts_mut(ptr, len as usize + 1);
