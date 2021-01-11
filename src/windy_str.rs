@@ -105,6 +105,11 @@ impl WStr {
     }
 
     #[cfg(not(feature = "no_std"))]
+    pub fn to_wstring(&self) -> WString {
+        unsafe { WString::new_nul_unchecked(&self.inner) }
+    }
+
+    #[cfg(not(feature = "no_std"))]
     /// Converts [`WStr`] to [`AString`].
     ///
     /// # Example
@@ -272,6 +277,11 @@ impl AStr {
     pub fn to_string_lossy(&self) -> String {
         // ANSI -> Unicode -> UTF-8
         self.to_wstring_lossy().to_string_lossy()
+    }
+
+    #[cfg(not(feature = "no_std"))]
+    pub fn to_astring(&self) -> AString {
+        unsafe { AString::new_nul_unchecked(&self.inner) }
     }
 
     /// Converts [`AStr`] to [`WString`].
