@@ -3,7 +3,7 @@
 [![crates.io](https://img.shields.io/crates/v/windy.svg)](https://crates.io/crates/windy)
 [![docs.rs](https://docs.rs/windy/badge.svg)](https://docs.rs/windy)
 
-A Windows strings library supports AString (ANSI string) and WString (Unicode string).
+A Windows strings library that supports AString (ANSI string) and WString (Unicode string).
 
 # Features
 

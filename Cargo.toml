@@ -6,7 +6,7 @@ license = "MIT OR Apache-2.0"
 homepage = "https://github.com/takubokudori/windy"
 repository = "https://github.com/takubokudori/windy"
 keywords = ["Windows", "ANSI", "Unicode", "Multi-byte"]
-description = "A Windows strings library supports AString (ANSI string) and WString (Unicode string)"
+description = "A Windows strings library that supports AString (ANSI string) and WString (Unicode string)"
 readme = "README.md"
 edition = "2018"
 

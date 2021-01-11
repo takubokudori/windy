@@ -62,6 +62,7 @@ impl WString {
         &self.as_u8_bytes_with_nul()[..self.inner.len() - 2]
     }
 
+    /// Returns &[`WStr`].
     #[inline]
     pub fn as_c_str(&self) -> &WStr { &*self }
 
@@ -311,12 +312,15 @@ pub struct AString {
 }
 
 impl AString {
+    /// Returns `&[u8]`.
     #[inline]
     pub fn as_bytes_with_nul(&self) -> &[u8] { &self.inner }
 
+    /// Returns `&mut [u8]`.
     #[inline]
     unsafe fn as_bytes_with_nul_mut(&mut self) -> &mut [u8] { &mut self.inner }
 
+    /// Returns `&[u8]`.
     #[inline]
     pub fn as_bytes(&self) -> &[u8] {
         &self.as_bytes_with_nul()[..self.inner.len() - 1]
@@ -335,6 +339,7 @@ impl AString {
         }
     }
 
+    /// Returns the `*const u8` pointer.
     #[inline]
     pub fn as_ptr(&self) -> *const u8 { self.inner.as_ptr() }
 

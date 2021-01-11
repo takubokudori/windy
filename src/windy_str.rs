@@ -22,6 +22,7 @@ macro_rules! str_impl_debug {
     };
 }
 
+/// Represents a borrowed unicode string.
 #[repr(C)]
 pub struct WStr {
     inner: [wchar_t],
@@ -66,7 +67,7 @@ impl WStr {
     }
 
     #[cfg(not(feature = "no_std"))]
-    /// Converts to UTF-8 string.
+    /// Converts [`WString`] to UTF-8 string.
     ///
     /// If an input has an invalid character, this function returns [`ConvertError::ConvertToUtf8Error`].
     pub fn to_string(&self) -> ConvertResult<String> {
@@ -85,7 +86,7 @@ impl WStr {
     }
 
     #[cfg(not(feature = "no_std"))]
-    /// Converts to UTF-8 string.
+    /// Converts [`WStr`] to UTF-8 string.
     ///
     /// The function replaces Illegal sequences with with `\u{FFFD}`.
     pub fn to_string_lossy(&self) -> String {
@@ -104,6 +105,7 @@ impl WStr {
         }
     }
 
+    /// Creates [`WString`] from [`WStr`].
     #[cfg(not(feature = "no_std"))]
     pub fn to_wstring(&self) -> WString {
         unsafe { WString::new_nul_unchecked(&self.inner) }
@@ -230,6 +232,7 @@ impl Ord for WStr {
     }
 }
 
+/// Represents a borrowed ANSI string.
 #[repr(C)]
 pub struct AStr {
     inner: [u8],
@@ -267,18 +270,21 @@ impl AStr {
         &bytes[..bytes.len() - 1]
     }
 
+    /// Creates [`String`] from [`AStr`].
     #[cfg(not(feature = "no_std"))]
     pub fn to_string(&self) -> ConvertResult<String> {
         // ANSI -> Unicode -> UTF-8
         self.to_wstring()?.to_string()
     }
 
+    /// Creates [`String`] from [`AStr`].
     #[cfg(not(feature = "no_std"))]
     pub fn to_string_lossy(&self) -> String {
         // ANSI -> Unicode -> UTF-8
         self.to_wstring_lossy().to_string_lossy()
     }
 
+    /// Creates [`AString`] from [`AStr`].
     #[cfg(not(feature = "no_std"))]
     pub fn to_astring(&self) -> AString {
         unsafe { AString::new_nul_unchecked(&self.inner) }

@@ -2,9 +2,7 @@
 // This source code is licensed under the MIT or Apache-2.0 license.
 //! # Windy
 //!
-//! Windows strings library
-//!
-//! This crate supports AString (ANSI string) and WString (Unicode string).
+//! A Windows strings library that supports AString (ANSI string) and WString (Unicode string).
 //!
 //! # Features
 //!
