@@ -34,6 +34,8 @@ use raw::*;
 #[cfg(not(feature = "no_std"))]
 pub use string::*;
 pub use windy_str::*;
+#[cfg(feature = "macros")]
+pub use windy_macros as macros;
 
 #[cfg(feature = "no_std")]
 #[allow(unused_imports)]
