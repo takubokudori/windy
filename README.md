@@ -11,6 +11,7 @@ A Windows strings library that supports AString (ANSI string) and WString (Unico
 - Unicode string(WString)
 - Interconversion between AString, WString and String.
 - no_std support
+- Macros support
 
 # Installation
 
@@ -18,7 +19,7 @@ Add the following lines to your Cargo.toml:
 
 ```
 [dependencies]
-windy = "0.1.2"
+windy = "0.1.3"
 ```
 
 # Example
@@ -46,9 +47,27 @@ fn main() {
 
 # no_std support
 
-If you want to use no_std, turn on the no_std feature.
+If you want to use no_std, turn on the `no_std` feature.
 
-AString and WString are not available when no_std feature is on.
+AString and WString are not available when `no_std` feature is on.
+
+# Macros support
+
+[windy-macros](https://github.com/takubokudori/windy-macros) to convert a UTF-8 string to WString or AString at compile
+time.
+
+If you want to use macros, turn on the `macros` feature.
+
+## Example
+
+```rust
+use windy::WStr;
+use windy::macros::wstr;
+
+fn main() {
+    let s: &WStr = wstr!("test");
+}
+```
 
 # License
 
