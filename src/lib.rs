@@ -12,10 +12,9 @@
 //! - no_std support
 //!
 //! # no_std support
+//! If you don't want to use std, use `--no-default-features`.
 //!
-//! If you want to use no_std, turn on the no_std feature.
-//!
-//! AString and WString are not available when no_std feature is on.
+//! AString and WString are not available when no_std.
 //!
 //! # License
 //!
@@ -24,26 +23,26 @@
 #![cfg_attr(feature = "no_std", no_std)]
 
 mod raw;
-#[cfg(not(feature = "no_std"))]
+#[cfg(feature = "std")]
 mod string;
-#[cfg(not(feature = "no_std"))]
+#[cfg(feature = "std")]
 mod traits;
 mod windy_str;
 
 use raw::*;
-#[cfg(not(feature = "no_std"))]
+#[cfg(feature = "std")]
 pub use string::*;
 #[cfg(feature = "macros")]
 pub use windy_macros as macros;
 pub use windy_str::*;
 
-#[cfg(feature = "no_std")]
+#[cfg(not(feature = "std"))]
 #[allow(unused_imports)]
 pub(crate) mod __lib {
     pub(crate) use core::{cmp, convert, fmt, ops, ptr, slice};
 }
 
-#[cfg(not(feature = "no_std"))]
+#[cfg(feature = "std")]
 #[allow(unused_imports)]
 pub(crate) mod __lib {
     pub(crate) use std::{cmp, convert, fmt, ops, ptr, slice};
@@ -99,20 +98,20 @@ impl fmt::Debug for ConvertError {
             Self::ConvertToAnsiError(_) => "ConvertToAnsiError",
             Self::ConvertToUnicodeError(_) => "ConvertToUnicodeError",
         };
-        #[cfg(not(feature = "no_std"))]
+        #[cfg(feature = "std")]
         {
             let e =
                 std::io::Error::from_raw_os_error(self.to_error_code() as i32);
             f.debug_struct(st).field("", &e).finish()
         }
-        #[cfg(feature = "no_std")]
+        #[cfg(not(feature = "std"))]
         {
             f.debug_struct(st).field("", &self.to_error_code()).finish()
         }
     }
 }
 
-#[cfg(not(feature = "no_std"))]
+#[cfg(feature = "std")]
 impl std::error::Error for ConvertError {}
 
 impl fmt::Display for ConvertError {
@@ -265,7 +264,7 @@ where
     }
 }
 
-#[cfg(not(feature = "no_std"))]
+#[cfg(feature = "std")]
 pub(crate) fn wide_char_to_multi_byte_wrap(
     code_page: UINT,
     wc_flags: DWORD,
@@ -315,7 +314,7 @@ pub(crate) fn wide_char_to_multi_byte_wrap(
 
 /// Gets the required buffer size and gets a multi-byte string.
 #[inline]
-#[cfg(not(feature = "no_std"))]
+#[cfg(feature = "std")]
 pub(crate) fn wide_char_to_multi_byte2(
     code_page: UINT,
     wc_flags: DWORD,
@@ -351,7 +350,7 @@ pub(crate) fn wide_char_to_multi_byte2(
     Ok(ret)
 }
 
-#[cfg(not(feature = "no_std"))]
+#[cfg(feature = "std")]
 pub(crate) fn multi_byte_to_wide_char_wrap(
     code_page: UINT,
     mb_flags: DWORD,
@@ -384,7 +383,7 @@ pub(crate) fn multi_byte_to_wide_char_wrap(
 
 /// Gets the required buffer size and gets a wide string.
 #[inline]
-#[cfg(not(feature = "no_std"))]
+#[cfg(feature = "std")]
 pub(crate) fn multi_byte_to_wide_char2(
     code_page: UINT,
     mb_flags: DWORD,

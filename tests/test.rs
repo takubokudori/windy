@@ -1,7 +1,7 @@
 // Copyright takubokudori.
 // This source code is licensed under the MIT or Apache-2.0 license.
 #[cfg(test)]
-#[cfg(not(feature = "no_std"))]
+#[cfg(feature = "std")]
 pub mod tests {
     use std::convert::TryFrom;
     use windy::*;
@@ -196,7 +196,7 @@ pub mod tests {
     }
 }
 
-/// Tests no_std.
+/// Tests std.
 #[cfg(test)]
 pub mod tests2 {
     use windy::*;

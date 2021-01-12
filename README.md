@@ -47,9 +47,9 @@ fn main() {
 
 # no_std support
 
-If you want to use no_std, turn on the `no_std` feature.
+If you don't want to use std, use `--no-default-features`.
 
-AString and WString are not available when `no_std` feature is on.
+AString and WString are not available when no_std.
 
 # Macros support
 

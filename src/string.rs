@@ -14,11 +14,11 @@ macro_rules! str_impl_debug {
         impl fmt::Debug for $x {
             fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
                 f.write_char('"')?;
-                #[cfg(feature = "no_std")]
+                #[cfg(not(feature = "std"))]
                 {
                     fmt::Debug::fmt(&self.to_bytes_with_nul(), f)?;
                 }
-                #[cfg(not(feature = "no_std"))]
+                #[cfg(feature = "std")]
                 {
                     fmt::Display::fmt(&self.to_string_lossy(), f)?;
                 }

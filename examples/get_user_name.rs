@@ -1,10 +1,10 @@
 // Copyright takubokudori.
 // This source code is licensed under the MIT or Apache-2.0 license.
-#[cfg(not(feature = "no_std"))]
+#[cfg(feature = "std")]
 use windy::*;
 
 #[allow(non_snake_case)]
-#[cfg(not(feature = "no_std"))]
+#[cfg(feature = "std")]
 extern "system" {
     fn GetEnvironmentVariableA(
         lpName: *const u8,
@@ -18,7 +18,7 @@ extern "system" {
     ) -> u32;
 }
 
-#[cfg(not(feature = "no_std"))]
+#[cfg(feature = "std")]
 fn get_environment_variable_a() {
     let name = AString::from_str("PATH").unwrap();
     let mut buf = Vec::with_capacity(0x1000);
@@ -35,7 +35,7 @@ fn get_environment_variable_a() {
     }
 }
 
-#[cfg(not(feature = "no_std"))]
+#[cfg(feature = "std")]
 fn get_environment_variable_w() {
     let name = WString::from_str("PATH").unwrap();
     let mut buf = Vec::with_capacity(0x1000);
@@ -52,7 +52,7 @@ fn get_environment_variable_w() {
     }
 }
 
-#[cfg(not(feature = "no_std"))]
+#[cfg(feature = "std")]
 fn main() {
     println!("*****get_environment_variable_a*****");
     get_environment_variable_a();
@@ -60,7 +60,7 @@ fn main() {
     get_environment_variable_w();
 }
 
-#[cfg(feature = "no_std")]
+#[cfg(not(feature = "std"))]
 fn main() {
     panic!("This example must use std!");
 }

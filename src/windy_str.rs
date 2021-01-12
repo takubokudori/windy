@@ -8,11 +8,11 @@ macro_rules! str_impl_debug {
         impl fmt::Debug for $x {
             fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
                 f.write_char('"')?;
-                #[cfg(feature = "no_std")]
+                #[cfg(not(feature = "std"))]
                 {
                     fmt::Debug::fmt(&self.to_bytes_with_nul(), f)?;
                 }
-                #[cfg(not(feature = "no_std"))]
+                #[cfg(feature = "std")]
                 {
                     fmt::Display::fmt(&self.to_string_lossy(), f)?;
                 }
@@ -66,7 +66,7 @@ impl WStr {
         &bytes[..bytes.len() - 2]
     }
 
-    #[cfg(not(feature = "no_std"))]
+    #[cfg(feature = "std")]
     /// Converts [`WString`] to UTF-8 string.
     ///
     /// If an input has an invalid character, this function returns [`ConvertError::ConvertToUtf8Error`].
@@ -85,7 +85,7 @@ impl WStr {
         }
     }
 
-    #[cfg(not(feature = "no_std"))]
+    #[cfg(feature = "std")]
     /// Converts [`WStr`] to UTF-8 string.
     ///
     /// The function replaces Illegal sequences with with `\u{FFFD}`.
@@ -106,12 +106,12 @@ impl WStr {
     }
 
     /// Creates [`WString`] from [`WStr`].
-    #[cfg(not(feature = "no_std"))]
+    #[cfg(feature = "std")]
     pub fn to_wstring(&self) -> WString {
         unsafe { WString::new_nul_unchecked(&self.inner) }
     }
 
-    #[cfg(not(feature = "no_std"))]
+    #[cfg(feature = "std")]
     /// Converts [`WStr`] to [`AString`].
     ///
     /// # Example
@@ -134,7 +134,7 @@ impl WStr {
         unsafe { Ok(AString::new_unchecked(mb)) }
     }
 
-    #[cfg(not(feature = "no_std"))]
+    #[cfg(feature = "std")]
     /// Converts [`WStr`] to [`AString`].
     ///
     /// # Example
@@ -271,21 +271,21 @@ impl AStr {
     }
 
     /// Creates [`String`] from [`AStr`].
-    #[cfg(not(feature = "no_std"))]
+    #[cfg(feature = "std")]
     pub fn to_string(&self) -> ConvertResult<String> {
         // ANSI -> Unicode -> UTF-8
         self.to_wstring()?.to_string()
     }
 
     /// Creates [`String`] from [`AStr`].
-    #[cfg(not(feature = "no_std"))]
+    #[cfg(feature = "std")]
     pub fn to_string_lossy(&self) -> String {
         // ANSI -> Unicode -> UTF-8
         self.to_wstring_lossy().to_string_lossy()
     }
 
     /// Creates [`AString`] from [`AStr`].
-    #[cfg(not(feature = "no_std"))]
+    #[cfg(feature = "std")]
     pub fn to_astring(&self) -> AString {
         unsafe { AString::new_nul_unchecked(&self.inner) }
     }
@@ -302,7 +302,7 @@ impl AStr {
     /// let s2 = AString::from_str("test").unwrap().to_wstring().unwrap();
     /// assert_eq!(s, s2);
     /// ```
-    #[cfg(not(feature = "no_std"))]
+    #[cfg(feature = "std")]
     pub fn to_wstring(&self) -> ConvertResult<WString> {
         let wc = multi_byte_to_wide_char_wrap(
             CP_ACP,
@@ -324,7 +324,7 @@ impl AStr {
     /// let s2 = AString::from_str("test").unwrap().to_wstring_lossy();
     /// assert_eq!(s, s2);
     /// ```
-    #[cfg(not(feature = "no_std"))]
+    #[cfg(feature = "std")]
     pub fn to_wstring_lossy(&self) -> WString {
         let wc = multi_byte_to_wide_char_wrap(CP_ACP, 0, self.to_bytes())
             .map_err(conv_err!(@unicode))

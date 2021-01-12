@@ -29,6 +29,7 @@ name = "string"
 harness = false
 
 [features]
+default = ["std"]
 debug_insufficient_buffer = []
 macros = ["windy-macros"]
-no_std = []
+std = []
