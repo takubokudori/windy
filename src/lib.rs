@@ -20,7 +20,7 @@
 //!
 //! This software is released under the MIT or Apache-2.0 License, see LICENSE-MIT or LICENSE-APACHE.
 #![cfg(windows)]
-#![cfg_attr(feature = "no_std", no_std)]
+#![cfg_attr(not(feature = "std"), no_std)]
 
 mod raw;
 #[cfg(feature = "std")]
