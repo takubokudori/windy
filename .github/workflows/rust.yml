@@ -10,7 +10,7 @@ jobs:
     steps:
       - uses: actions/checkout@v1
       - name: Run tests
-        run: cargo test --release --verbose
+        run: cargo test --release --verbose --no-default-features
       - name: Run tests
         run: cargo test --release --verbose --all-features
       - name: Install i686 toolchain
@@ -18,4 +18,4 @@ jobs:
       - name: Add i686 target
         run: rustup target add i686-pc-windows-msvc
       - name: Run tests on i686
-        run: cargo test --release --verbose --target=i686-pc-windows-msvc
+        run: cargo test --release --verbose --target=i686-pc-windows-msvc --all-features
