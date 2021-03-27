@@ -1,7 +1,6 @@
 // Copyright takubokudori.
 // This source code is licensed under the MIT or Apache-2.0 license.
-#![allow(non_camel_case_types)]
-#![allow(unused)]
+#![allow(unused, non_camel_case_types, clippy::upper_case_acronyms)]
 
 pub(crate) type c_char = i8;
 pub(crate) type c_int = i32;

@@ -120,12 +120,12 @@ impl fmt::Display for ConvertError {
     }
 }
 
-impl Into<u32> for ConvertError {
-    fn into(self) -> u32 { self.to_error_code() }
+impl From<ConvertError> for u32 {
+    fn from(x: ConvertError) -> Self { x.to_error_code() }
 }
 
-impl Into<i32> for ConvertError {
-    fn into(self) -> i32 { self.to_error_code() as i32 }
+impl From<ConvertError> for i32 {
+    fn from(x: ConvertError) -> Self { x.to_error_code() as i32 }
 }
 
 #[macro_export]
