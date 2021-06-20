@@ -82,7 +82,7 @@ pub enum ConvertError {
 impl ConvertError {
     /// Returns a os error code.
     #[inline]
-    pub fn to_error_code(&self) -> u32 {
+    pub fn as_error_code(&self) -> u32 {
         match self {
             Self::ConvertToUtf8Error(x) => *x,
             Self::ConvertToAnsiError(x) => *x,
@@ -101,12 +101,12 @@ impl fmt::Debug for ConvertError {
         #[cfg(feature = "std")]
         {
             let e =
-                std::io::Error::from_raw_os_error(self.to_error_code() as i32);
+                std::io::Error::from_raw_os_error(self.as_error_code() as i32);
             f.debug_struct(st).field("", &e).finish()
         }
         #[cfg(not(feature = "std"))]
         {
-            f.debug_struct(st).field("", &self.to_error_code()).finish()
+            f.debug_struct(st).field("", &self.as_error_code()).finish()
         }
     }
 }
@@ -121,11 +121,11 @@ impl fmt::Display for ConvertError {
 }
 
 impl From<ConvertError> for u32 {
-    fn from(x: ConvertError) -> Self { x.to_error_code() }
+    fn from(x: ConvertError) -> Self { x.as_error_code() }
 }
 
 impl From<ConvertError> for i32 {
-    fn from(x: ConvertError) -> Self { x.to_error_code() as i32 }
+    fn from(x: ConvertError) -> Self { x.as_error_code() as i32 }
 }
 
 #[macro_export]
