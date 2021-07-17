@@ -136,6 +136,20 @@ pub mod tests {
     }
 
     #[test]
+    fn test_string_concatenation() {
+        let x = AString::from_str("hello ").unwrap();
+        let y = AString::from_str("world").unwrap();
+        let xy = x + y;
+        assert_eq!("hello world", xy.to_string().unwrap());
+        assert_eq!("hello world", xy.to_string_lossy());
+        let x = WString::from_str("ハロー🍣").unwrap();
+        let y = WString::from_str("world!☆").unwrap();
+        let xy = x + y;
+        assert_eq!("ハロー🍣world!☆", xy.to_string().unwrap());
+        assert_eq!("ハロー🍣world!☆", xy.to_string_lossy());
+    }
+
+    #[test]
     fn test_string_conversion_invalid() {
         // UTF-8 -> ANSI (Invalid)
         assert_eq!(

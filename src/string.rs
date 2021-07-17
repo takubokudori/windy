@@ -28,6 +28,13 @@ macro_rules! str_impl_debug {
     };
 }
 
+fn concat_slice<T: Clone>(x: &[T], y: &[T]) -> Vec<T> {
+    let mut inner = Vec::with_capacity(x.len() + y.len());
+    inner.extend_from_slice(x);
+    inner.extend_from_slice(y);
+    inner
+}
+
 /// Represents wide string (unicode string).
 #[repr(C)]
 #[derive(Clone, PartialOrd, PartialEq, Eq, Ord, Hash)]
@@ -304,6 +311,15 @@ impl TryFrom<&AString> for WString {
     }
 }
 
+impl ops::Add<WString> for WString {
+    type Output = Self;
+
+    fn add(self, rhs: Self) -> Self::Output {
+        let inner = concat_slice(self.as_bytes(), rhs.as_bytes_with_nul());
+        unsafe { Self::new_nul_unchecked(inner) }
+    }
+}
+
 /// Represents ANSI string.
 #[repr(C)]
 #[derive(Clone, PartialOrd, PartialEq, Eq, Ord, Hash)]
@@ -523,6 +539,15 @@ impl TryFrom<&WString> for AString {
     #[inline]
     fn try_from(x: &WString) -> Result<Self, Self::Error> {
         Self::try_from(x.as_c_str())
+    }
+}
+
+impl ops::Add<AString> for AString {
+    type Output = Self;
+
+    fn add(self, rhs: Self) -> Self::Output {
+        let inner = concat_slice(self.as_bytes(), rhs.as_bytes_with_nul());
+        unsafe { Self::new_nul_unchecked(inner) }
     }
 }
 
