@@ -56,13 +56,17 @@ AString and WString are not available when no_std.
 [windy-macros](https://github.com/takubokudori/windy-macros) to convert a UTF-8 string to WString or AString at compile
 time.
 
-If you want to use macros, turn on the `macros` feature.
+```
+[dependencies]
+windy = "0.2.0"
+windy-macros = "0.1.1"
+```
 
 ## Example
 
 ```rust
 use windy::WStr;
-use windy::macros::wstr;
+use windy_macros::wstr;
 
 fn main() {
     let s: &WStr = wstr!("test");
