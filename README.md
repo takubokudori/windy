@@ -8,7 +8,9 @@ A Windows strings library that supports AString (ANSI string) and WString (Unico
 # Features
 
 - ANSI string(AString)
-- Unicode string(WString)
+- Wide string(WString)
+- AnsiString(ANSI_STRING)
+- UnicodeString(UNICODE_STRING)
 - Interconversion between AString, WString and String.
 - no_std support
 - Macros support
@@ -19,7 +21,7 @@ Add the following lines to your Cargo.toml:
 
 ```
 [dependencies]
-windy = "0.1.3"
+windy = "0.2.0"
 ```
 
 # Example

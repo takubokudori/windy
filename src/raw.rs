@@ -28,6 +28,7 @@ pub(crate) type PWSTR = LPWSTR;
 pub(crate) type PCWSTR = LPCWSTR;
 
 #[repr(C)]
+#[derive(Debug, Clone, Eq, PartialEq, Hash)]
 pub struct UNICODE_STRING {
     pub Length: USHORT,
     pub MaximumLength: USHORT,
@@ -35,6 +36,7 @@ pub struct UNICODE_STRING {
 }
 
 #[repr(C)]
+#[derive(Debug, Clone, Eq, PartialEq, Hash)]
 pub struct ANSI_STRING {
     pub Length: USHORT,
     pub MaximumLength: USHORT,

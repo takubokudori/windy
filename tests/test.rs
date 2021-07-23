@@ -170,11 +170,17 @@ pub mod tests {
 
     #[test]
     fn test_empty_string() {
-        assert_eq!("", &WString::try_from("").unwrap().try_to_string().unwrap());
+        assert_eq!(
+            "",
+            &WString::try_from("").unwrap().try_to_string().unwrap()
+        );
         assert_eq!("", &WString::try_from("").unwrap().to_string_lossy());
         assert_eq!("", &WString::from_str_lossy("").try_to_string().unwrap());
         assert_eq!("", &WString::from_str_lossy("").to_string_lossy());
-        assert_eq!("", &AString::try_from("").unwrap().try_to_string().unwrap());
+        assert_eq!(
+            "",
+            &AString::try_from("").unwrap().try_to_string().unwrap()
+        );
         assert_eq!("", &AString::try_from("").unwrap().to_string_lossy());
         assert_eq!("", &AString::from_str_lossy("").try_to_string().unwrap());
         assert_eq!("", &AString::from_str_lossy("").to_string_lossy());
@@ -246,6 +252,34 @@ pub mod tests2 {
             assert_eq!(x, s.to_bytes_with_nul());
             let s = AStr::from_raw_s(x.as_mut_ptr(), 6);
             assert_eq!(x, s.to_bytes_with_nul());
+        }
+    }
+
+    #[test]
+    fn test_ansi_string() {
+        let x = &mut [0x74, 0x65, 0x73, 0x74, 0x00];
+        unsafe {
+            let s = AStr::from_raw(x.as_mut_ptr());
+            assert_eq!(x, s.to_bytes_with_nul());
+            let a = AnsiString::new(s);
+            assert_eq!(x, a.to_bytes_with_nul());
+            assert_eq!(s.as_ptr(), a.as_raw().Buffer);
+            assert_eq!(4, a.as_raw().Length);
+            assert_eq!(5, a.as_raw().MaximumLength);
+        }
+    }
+
+    #[test]
+    fn test_unicode_string() {
+        let x = &mut [0x0074, 0x0065, 0x0073, 0x0074, 0x0000];
+        unsafe {
+            let s = WStr::from_raw(x.as_mut_ptr());
+            assert_eq!(x, s.to_bytes_with_nul());
+            let a = UnicodeString::new(s);
+            assert_eq!(x, a.to_bytes_with_nul());
+            assert_eq!(s.as_ptr(), a.as_raw().Buffer);
+            assert_eq!(8, a.as_raw().Length);
+            assert_eq!(10, a.as_raw().MaximumLength);
         }
     }
 }
