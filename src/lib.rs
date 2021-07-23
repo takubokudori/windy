@@ -22,6 +22,7 @@
 #![cfg(windows)]
 #![cfg_attr(not(feature = "std"), no_std)]
 
+mod ntstring;
 mod raw;
 #[cfg(feature = "std")]
 mod string;
@@ -29,6 +30,7 @@ mod string;
 mod traits;
 mod windy_str;
 
+pub use ntstring::*;
 use raw::*;
 #[cfg(feature = "std")]
 pub use string::*;

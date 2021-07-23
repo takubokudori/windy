@@ -24,7 +24,7 @@ macro_rules! str_impl_debug {
     };
 }
 
-/// Represents a borrowed unicode string.
+/// Represents a borrowed Unicode string.
 #[repr(C)]
 pub struct WStr {
     inner: [wchar_t],
@@ -162,7 +162,7 @@ impl WStr {
     /// Creates a new `&WStr` from `bytes`.
     ///
     /// # Safety
-    /// `bytes` must be a correct unicode string.
+    /// `bytes` must be a correct Unicode string.
     #[inline]
     pub unsafe fn from_bytes_with_nul_unchecked(bytes: &[u16]) -> &Self {
         &*(bytes as *const [u16] as *const Self)
@@ -171,7 +171,7 @@ impl WStr {
     /// Creates a new `&WStr` from `bytes`.
     ///
     /// # Safety
-    /// `bytes` must be a correct unicode string.
+    /// `bytes` must be a correct Unicode string.
     #[inline]
     pub unsafe fn from_bytes_with_nul_unchecked_mut(
         bytes: &mut [u16],
@@ -182,7 +182,7 @@ impl WStr {
     /// Creates &[`WStr`] from `ptr`.
     ///
     /// # Safety
-    /// `ptr` must be a null-terminated unicode string.
+    /// `ptr` must be a null-terminated Unicode string.
     pub unsafe fn from_raw<'a>(ptr: *const wchar_t) -> &'a Self {
         Self::from_raw_s_unchecked(ptr, wcslen(ptr))
     }
@@ -205,7 +205,7 @@ impl WStr {
     /// Creates &[`WStr`] from `ptr` and `len` without length check.
     ///
     /// # Safety
-    /// `ptr` must be a null-terminated unicode string.
+    /// `ptr` must be a null-terminated Unicode string.
     #[inline]
     pub unsafe fn from_raw_s_unchecked<'a>(
         ptr: *const wchar_t,
@@ -234,6 +234,7 @@ impl Ord for WStr {
     }
 }
 
+#[cfg(feature = "std")]
 impl ToString for WStr {
     fn to_string(&self) -> String {
         self.try_to_string().expect("Failed to convert to utf8")
@@ -318,7 +319,7 @@ impl AStr {
             self.to_bytes(),
         )
         .map_err(conv_err!(@unicode))?;
-        // valid unicode string
+        // valid Unicode string
         unsafe { Ok(WString::_new(wc)) }
     }
 
@@ -337,7 +338,7 @@ impl AStr {
         let wc = multi_byte_to_wide_char_wrap(CP_ACP, 0, self.to_bytes())
             .map_err(conv_err!(@unicode))
             .unwrap();
-        // valid unicode string
+        // valid Unicode string
         unsafe { WString::_new(wc) }
     }
 
@@ -413,6 +414,7 @@ impl Ord for AStr {
     }
 }
 
+#[cfg(feature = "std")]
 impl ToString for AStr {
     fn to_string(&self) -> String {
         self.try_to_string().expect("Failed to convert to utf8")

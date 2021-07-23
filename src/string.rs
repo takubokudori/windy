@@ -47,7 +47,7 @@ fn concat_slice<T: Clone>(x: &[T], y: &[T]) -> Vec<T> {
     inner
 }
 
-/// Represents a wide string (unicode string).
+/// Represents a wide string (Unicode string).
 #[repr(C)]
 #[derive(Clone, PartialOrd, PartialEq, Eq, Ord, Hash)]
 pub struct WString {
@@ -109,7 +109,7 @@ impl WString {
     /// Creates [`WString`] from [`Vec`]<u16> without any encoding checks.
     ///
     /// # Safety
-    /// `v` must be a correct unicode string.
+    /// `v` must be a correct Unicode string.
     pub unsafe fn new_unchecked<T: Into<Vec<u16>>>(v: T) -> Self {
         Self::_new(v.into())
     }
@@ -117,7 +117,7 @@ impl WString {
     /// Creates [`WString`] from [`Vec`]<u8> without any encoding checks.
     ///
     /// # Safety
-    /// `v` must be a correct unicode string.
+    /// `v` must be a correct Unicode string.
     pub unsafe fn new_c_unchecked<T: Into<Vec<u8>>>(v: T) -> Self {
         Self::_new2(v.into())
     }
@@ -151,7 +151,7 @@ impl WString {
     /// Creates [`WString`] from `v` without a null-terminated check and any encoding checks.
     ///
     /// # Safety
-    /// `v` must be a null-terminated unicode string.
+    /// `v` must be a null-terminated Unicode string.
     pub unsafe fn new_nul_unchecked<T: Into<Vec<u16>>>(v: T) -> Self {
         let v = v.into();
         Self::_new_nul_unchecked(v)
@@ -204,7 +204,7 @@ impl WString {
     /// Creates [`WString`] from `ptr`.
     ///
     /// # Safety
-    /// `ptr` must be a null-terminated unicode string.
+    /// `ptr` must be a null-terminated Unicode string.
     pub unsafe fn clone_from_raw(ptr: *mut wchar_t) -> Self {
         Self::clone_from_raw_s_unchecked(ptr, wcslen(ptr))
     }
@@ -212,7 +212,7 @@ impl WString {
     /// Creates [`WString`] from `ptr` and `len`.
     ///
     /// # Safety
-    /// `ptr` must be a null-terminated unicode string.
+    /// `ptr` must be a null-terminated Unicode string.
     pub unsafe fn clone_from_raw_s(ptr: *mut wchar_t, mut len: usize) -> Self {
         let len2 = wcsnlen(ptr, len);
         if len2 < len {
@@ -224,7 +224,7 @@ impl WString {
     /// Creates [`WString`] from `ptr` and `len` without length check.
     ///
     /// # Safety
-    /// `ptr` must be a null-terminated unicode string.
+    /// `ptr` must be a null-terminated Unicode string.
     #[inline]
     pub unsafe fn clone_from_raw_s_unchecked(
         ptr: *mut wchar_t,
