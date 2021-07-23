@@ -72,7 +72,7 @@ impl WStr {
     /// Converts [`WString`] to UTF-8 string.
     ///
     /// If an input has an invalid character, this function returns [`ConvertError::ConvertToUtf8Error`].
-    pub fn to_string(&self) -> ConvertResult<String> {
+    pub fn try_to_string(&self) -> ConvertResult<String> {
         unsafe {
             let mut mb = wide_char_to_multi_byte_wrap(
                 CP_UTF8,
@@ -234,6 +234,12 @@ impl Ord for WStr {
     }
 }
 
+impl ToString for WStr {
+    fn to_string(&self) -> String {
+        self.try_to_string().expect("Failed to convert to utf8")
+    }
+}
+
 /// Represents a borrowed ANSI string.
 #[repr(C)]
 pub struct AStr {
@@ -274,9 +280,9 @@ impl AStr {
 
     /// Creates [`String`] from [`AStr`].
     #[cfg(feature = "std")]
-    pub fn to_string(&self) -> ConvertResult<String> {
+    pub fn try_to_string(&self) -> ConvertResult<String> {
         // ANSI -> Unicode -> UTF-8
-        self.to_wstring()?.to_string()
+        self.to_wstring()?.try_to_string()
     }
 
     /// Creates [`String`] from [`AStr`].
@@ -404,6 +410,12 @@ impl PartialOrd for AStr {
 impl Ord for AStr {
     fn cmp(&self, other: &Self) -> Ordering {
         self.to_bytes().cmp(&other.to_bytes())
+    }
+}
+
+impl ToString for AStr {
+    fn to_string(&self) -> String {
+        self.try_to_string().expect("Failed to convert to utf8")
     }
 }
 

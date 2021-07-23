@@ -115,23 +115,23 @@ pub mod tests {
         // UTF-8 -> ANSI
         let _ = AString::from_str_lossy("スペシャル").to_string_lossy();
         let sa = AString::try_from("test").unwrap();
-        assert_eq!("test", sa.to_string().unwrap()); // ANSI -> UTF-8
+        assert_eq!("test", sa.try_to_string().unwrap()); // ANSI -> UTF-8
         assert_eq!("test", sa.to_string_lossy()); // ANSI -> UTF-8 lossy
                                                   // UTF-8 -> Unicode
         let sw = WString::try_from("test").unwrap();
-        assert_eq!("test", sw.to_string().unwrap()); // Unicode -> UTF-8
+        assert_eq!("test", sw.try_to_string().unwrap()); // Unicode -> UTF-8
         assert_eq!("test", sw.to_string_lossy()); // Unicode -> UTF-8 lossy
                                                   // Unicode -> ANSI
         let sa = sw.to_astring().unwrap();
-        assert_eq!("test", sa.to_string().unwrap());
+        assert_eq!("test", sa.try_to_string().unwrap());
         assert_eq!("test", sa.to_string_lossy());
         // ANSI -> Unicode
         let sw = sa.to_wstring().unwrap();
-        assert_eq!("test", sw.to_string().unwrap()); // ANSI -> UTF-8
+        assert_eq!("test", sw.try_to_string().unwrap()); // ANSI -> UTF-8
         assert_eq!("test", sw.to_string_lossy()); // ANSI -> UTF-8 lossy
                                                   // ANSI -> Unicode lossy
         let sw = sa.to_wstring_lossy();
-        assert_eq!("test", sw.to_string().unwrap()); // ANSI -> UTF-8
+        assert_eq!("test", sw.try_to_string().unwrap()); // ANSI -> UTF-8
         assert_eq!("test", sw.to_string_lossy()); // ANSI -> UTF-8 lossy
     }
 
@@ -140,12 +140,12 @@ pub mod tests {
         let x = AString::from_str("hello ").unwrap();
         let y = AString::from_str("world").unwrap();
         let xy = x + y;
-        assert_eq!("hello world", xy.to_string().unwrap());
+        assert_eq!("hello world", xy.try_to_string().unwrap());
         assert_eq!("hello world", xy.to_string_lossy());
         let x = WString::from_str("ハロー🍣").unwrap();
         let y = WString::from_str("world!☆").unwrap();
         let xy = x + y;
-        assert_eq!("ハロー🍣world!☆", xy.to_string().unwrap());
+        assert_eq!("ハロー🍣world!☆", xy.try_to_string().unwrap());
         assert_eq!("ハロー🍣world!☆", xy.to_string_lossy());
     }
 
@@ -158,7 +158,7 @@ pub mod tests {
         );
         // UTF-8 -> Unicode
         let sw = WString::try_from("スペシャルtest🍣").unwrap();
-        assert_eq!("スペシャルtest🍣", sw.to_string().unwrap()); // Unicode -> UTF-8
+        assert_eq!("スペシャルtest🍣", sw.try_to_string().unwrap()); // Unicode -> UTF-8
         assert_eq!("スペシャルtest🍣", sw.to_string_lossy()); // Unicode -> UTF-8 lossy
                                                               // Unicode -> ANSI (Invalid)
         assert_eq!(
@@ -170,13 +170,13 @@ pub mod tests {
 
     #[test]
     fn test_empty_string() {
-        assert_eq!("", &WString::try_from("").unwrap().to_string().unwrap());
+        assert_eq!("", &WString::try_from("").unwrap().try_to_string().unwrap());
         assert_eq!("", &WString::try_from("").unwrap().to_string_lossy());
-        assert_eq!("", &WString::from_str_lossy("").to_string().unwrap());
+        assert_eq!("", &WString::from_str_lossy("").try_to_string().unwrap());
         assert_eq!("", &WString::from_str_lossy("").to_string_lossy());
-        assert_eq!("", &AString::try_from("").unwrap().to_string().unwrap());
+        assert_eq!("", &AString::try_from("").unwrap().try_to_string().unwrap());
         assert_eq!("", &AString::try_from("").unwrap().to_string_lossy());
-        assert_eq!("", &AString::from_str_lossy("").to_string().unwrap());
+        assert_eq!("", &AString::from_str_lossy("").try_to_string().unwrap());
         assert_eq!("", &AString::from_str_lossy("").to_string_lossy());
 
         assert_eq!(
@@ -197,14 +197,14 @@ pub mod tests {
             &AString::from_str_lossy("")
                 .to_wstring()
                 .unwrap()
-                .to_string()
+                .try_to_string()
                 .unwrap()
         );
         assert_eq!(
             "",
             &AString::from_str_lossy("")
                 .to_wstring_lossy()
-                .to_string()
+                .try_to_string()
                 .unwrap()
         );
     }

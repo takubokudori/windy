@@ -25,6 +25,18 @@ macro_rules! str_impl_debug {
                 f.write_char('"')
             }
         }
+        impl fmt::Display for $x {
+            fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+                #[cfg(not(feature = "std"))]
+                {
+                    fmt::Debug::fmt(&self.to_bytes_with_nul(), f)
+                }
+                #[cfg(feature = "std")]
+                {
+                    fmt::Display::fmt(&self.to_string_lossy(), f)
+                }
+            }
+        }
     };
 }
 
@@ -35,7 +47,7 @@ fn concat_slice<T: Clone>(x: &[T], y: &[T]) -> Vec<T> {
     inner
 }
 
-/// Represents wide string (unicode string).
+/// Represents a wide string (unicode string).
 #[repr(C)]
 #[derive(Clone, PartialOrd, PartialEq, Eq, Ord, Hash)]
 pub struct WString {
@@ -252,7 +264,7 @@ impl TryInto<String> for WString {
     type Error = ConvertError;
 
     #[inline]
-    fn try_into(self) -> Result<String, Self::Error> { self.to_string() }
+    fn try_into(self) -> Result<String, Self::Error> { self.try_to_string() }
 }
 
 impl TryFrom<&str> for WString {
@@ -489,7 +501,7 @@ impl TryInto<String> for AString {
     type Error = ConvertError;
 
     #[inline]
-    fn try_into(self) -> Result<String, Self::Error> { self.to_string() }
+    fn try_into(self) -> Result<String, Self::Error> { self.try_to_string() }
 }
 
 impl TryFrom<&str> for AString {

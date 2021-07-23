@@ -12,7 +12,7 @@ fn bench_utf8_to_unicode(c: &mut Criterion) {
 
 fn bench_unicode_to_utf8(c: &mut Criterion) {
     let s = WString::try_from("Hello World!🍣食べたい").unwrap();
-    c.bench_function("Unicode to UTF-8", |b| b.iter(|| s.to_string().unwrap()));
+    c.bench_function("Unicode to UTF-8", |b| b.iter(|| s.try_to_string().unwrap()));
 }
 
 fn bench_unicode_to_ansi(c: &mut Criterion) {
@@ -33,7 +33,7 @@ fn bench_utf8_to_ansi(c: &mut Criterion) {
 
 fn bench_ansi_to_utf8(c: &mut Criterion) {
     let s = AString::try_from("Hello World").unwrap();
-    c.bench_function("ANSI to UTF-8", |b| b.iter(|| s.to_string().unwrap()));
+    c.bench_function("ANSI to UTF-8", |b| b.iter(|| s.try_to_string().unwrap()));
 }
 
 fn bench_utf8_to_unicode_lossy(c: &mut Criterion) {
