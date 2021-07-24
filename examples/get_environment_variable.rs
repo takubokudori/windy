@@ -7,7 +7,7 @@ use windy::*;
 #[cfg(feature = "std")]
 extern "system" {
     fn GetEnvironmentVariableA(
-        lpName: *const u8,
+        lpName: *const i8,
         lpBuffer: *mut u8,
         nSize: u32,
     ) -> u32;

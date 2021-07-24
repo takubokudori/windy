@@ -95,9 +95,6 @@ impl WString {
         }
     }
 
-    #[inline]
-    pub fn as_ptr(&self) -> *const u16 { self.inner.as_ptr() }
-
     /// Returns the length of bytes.
     #[inline]
     pub fn len(&self) -> usize { self.inner.len() }
@@ -366,10 +363,6 @@ impl AString {
             )
         }
     }
-
-    /// Returns the `*const u8` pointer.
-    #[inline]
-    pub fn as_ptr(&self) -> *const u8 { self.inner.as_ptr() }
 
     /// Returns the length of bytes.
     #[inline]

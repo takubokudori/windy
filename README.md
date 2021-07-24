@@ -70,8 +70,23 @@ windy-macros = "0.1.1"
 use windy::WStr;
 use windy_macros::wstr;
 
+#[allow(non_snake_case)]
+#[link(name = "user32")]
+extern "system" {
+    pub fn MessageBoxW(
+        hWnd: *mut c_void,
+        lpText: *const u16,
+        lpCaption: *const u16,
+        uType: u32,
+    ) -> i32;
+}
+
 fn main() {
-    let s: &WStr = wstr!("test");
+    let text: &WStr = wstr!("World");
+    let caption: &WStr = wstr!("CaptionW");
+    unsafe {
+        MessageBoxW(0 as _, text.as_ptr(), caption.as_ptr(), 0);
+    }
 }
 ```
 
