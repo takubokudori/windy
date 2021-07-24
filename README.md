@@ -19,7 +19,7 @@ A Windows strings library that supports AString (ANSI string) and WString (Unico
 
 Add the following lines to your Cargo.toml:
 
-```
+```toml
 [dependencies]
 windy = "0.2.0"
 ```
@@ -58,7 +58,7 @@ AString and WString are not available when no_std.
 [windy-macros](https://github.com/takubokudori/windy-macros) to convert a UTF-8 string to WString or AString at compile
 time.
 
-```
+```toml
 [dependencies]
 windy = "0.2.0"
 windy-macros = "0.1.1"
@@ -67,6 +67,7 @@ windy-macros = "0.1.1"
 ## Example
 
 ```rust
+use std::ffi::c_void;
 use windy::WStr;
 use windy_macros::wstr;
 

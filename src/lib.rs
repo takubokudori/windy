@@ -2,19 +2,46 @@
 // This source code is licensed under the MIT or Apache-2.0 license.
 //! # Windy
 //!
+//! [![crates.io](https://img.shields.io/crates/v/windy.svg)](https://crates.io/crates/windy)
+//! [![docs.rs](https://docs.rs/windy/badge.svg)](https://docs.rs/windy)
+//!
 //! A Windows strings library that supports AString (ANSI string) and WString (Unicode string).
 //!
 //! # Features
 //!
 //! - ANSI string(AString)
-//! - Unicode string(WString)
+//! - Wide string(WString)
+//! - AnsiString(ANSI_STRING)
+//! - UnicodeString(UNICODE_STRING)
 //! - Interconversion between AString, WString and String.
 //! - no_std support
+//! - Macros support
+//!
+//! # Installation
+//!
+//! Add the following lines to your Cargo.toml:
+//!
+//! ```toml
+//! [dependencies]
+//! windy = "0.2.0"
+//! ```
 //!
 //! # no_std support
+//!
 //! If you don't want to use std, use `--no-default-features`.
 //!
 //! AString and WString are not available when no_std.
+//!
+//! # Macros support
+//!
+//! [windy-macros](https://github.com/takubokudori/windy-macros) to convert a UTF-8 string to WString or AString at compile
+//! time.
+//!
+//! ```toml
+//! [dependencies]
+//! windy = "0.2.0"
+//! windy-macros = "0.1.1"
+//! ```
 //!
 //! # License
 //!
