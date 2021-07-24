@@ -24,5 +24,5 @@ fn main() {
 
 #[cfg(not(feature = "std"))]
 fn main() {
-    panic!("This example must use std!");
+    panic!("Use std feature!");
 }

@@ -13,6 +13,7 @@ edition = "2018"
 exclude = [
     ".gitignore",
     "examples/**",
+    ".github/**",
 ]
 
 [package.metadata.docs.rs]

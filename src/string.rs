@@ -323,11 +323,11 @@ impl TryFrom<&AString> for WString {
     }
 }
 
-impl ops::Add<WString> for WString {
+impl ops::Add<&WStr> for WString {
     type Output = Self;
 
-    fn add(self, rhs: Self) -> Self::Output {
-        let inner = concat_slice(self.as_bytes(), rhs.as_bytes_with_nul());
+    fn add(self, rhs: &WStr) -> Self::Output {
+        let inner = concat_slice(self.as_bytes(), rhs.to_bytes_with_nul());
         unsafe { Self::new_nul_unchecked(inner) }
     }
 }
@@ -554,11 +554,11 @@ impl TryFrom<&WString> for AString {
     }
 }
 
-impl ops::Add<AString> for AString {
+impl ops::Add<&AStr> for AString {
     type Output = Self;
 
-    fn add(self, rhs: Self) -> Self::Output {
-        let inner = concat_slice(self.as_bytes(), rhs.as_bytes_with_nul());
+    fn add(self, rhs: &AStr) -> Self::Output {
+        let inner = concat_slice(self.as_bytes(), rhs.to_bytes_with_nul());
         unsafe { Self::new_nul_unchecked(inner) }
     }
 }
