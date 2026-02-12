@@ -7,7 +7,7 @@ use windy::*;
 #[allow(non_snake_case)]
 #[cfg(feature = "std")]
 #[link(name = "user32")]
-extern "system" {
+unsafe extern "system" {
     pub fn MessageBoxA(
         hWnd: *mut c_void,
         lpText: *const i8,

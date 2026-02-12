@@ -2,10 +2,10 @@
 // This source code is licensed under the MIT or Apache-2.0 license.
 #![allow(clippy::missing_safety_doc)]
 use crate::{
-    raw::{
-        RtlInitAnsiString, RtlInitUnicodeString, ANSI_STRING, UNICODE_STRING,
-    },
     AStr, WStr,
+    raw::{
+        ANSI_STRING, RtlInitAnsiString, RtlInitUnicodeString, UNICODE_STRING,
+    },
 };
 use core::ops;
 

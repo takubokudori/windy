@@ -5,7 +5,7 @@ use windy::*;
 
 #[allow(non_snake_case)]
 #[cfg(feature = "std")]
-extern "system" {
+unsafe extern "system" {
     fn GetEnvironmentVariableA(
         lpName: *const i8,
         lpBuffer: *mut u8,

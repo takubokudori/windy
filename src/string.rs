@@ -108,7 +108,7 @@ impl WString {
     /// # Safety
     /// `v` must be a correct Unicode string.
     pub unsafe fn new_unchecked<T: Into<Vec<u16>>>(v: T) -> Self {
-        Self::_new(v.into())
+        unsafe { Self::_new(v.into()) }
     }
 
     /// Creates [`WString`] from [`Vec`]<u8> without any encoding checks.
@@ -116,19 +116,21 @@ impl WString {
     /// # Safety
     /// `v` must be a correct Unicode string.
     pub unsafe fn new_c_unchecked<T: Into<Vec<u8>>>(v: T) -> Self {
-        Self::_new2(v.into())
+        unsafe { Self::_new2(v.into()) }
     }
 
     #[inline]
     pub(crate) unsafe fn _new(mut v: Vec<u16>) -> Self {
-        let len = wcsnlen(v.as_ptr(), v.len());
-        if len == v.len() {
-            // append NULL.
-            v.reserve_exact(1);
-            v.push(0);
+        unsafe {
+            let len = wcsnlen(v.as_ptr(), v.len());
+            if len == v.len() {
+                // append NULL.
+                v.reserve_exact(1);
+                v.push(0);
+            }
+            v.set_len(len + 1);
+            Self::_new_nul_unchecked(v)
         }
-        v.set_len(len + 1);
-        Self::_new_nul_unchecked(v)
     }
 
     #[inline]
@@ -137,12 +139,14 @@ impl WString {
             v.push(0);
         } // Make the length even.
         let v = v.leak();
-        let x = Vec::from_raw_parts(
-            v.as_ptr() as *mut u16,
-            v.len() / 2,
-            v.len() / 2,
-        );
-        Self::_new(x)
+        unsafe {
+            let x = Vec::from_raw_parts(
+                v.as_ptr() as *mut u16,
+                v.len() / 2,
+                v.len() / 2,
+            );
+            Self::_new(x)
+        }
     }
 
     /// Creates [`WString`] from `v` without a null-terminated check and any encoding checks.
@@ -150,8 +154,10 @@ impl WString {
     /// # Safety
     /// `v` must be a null-terminated Unicode string.
     pub unsafe fn new_nul_unchecked<T: Into<Vec<u16>>>(v: T) -> Self {
-        let v = v.into();
-        Self::_new_nul_unchecked(v)
+        unsafe {
+            let v = v.into();
+            Self::_new_nul_unchecked(v)
+        }
     }
 
     #[inline]
@@ -203,7 +209,7 @@ impl WString {
     /// # Safety
     /// `ptr` must be a null-terminated Unicode string.
     pub unsafe fn clone_from_raw(ptr: *const wchar_t) -> Self {
-        Self::clone_from_raw_s_unchecked(ptr, wcslen(ptr))
+        unsafe { Self::clone_from_raw_s_unchecked(ptr, wcslen(ptr)) }
     }
 
     /// Creates [`WString`] from `ptr` and `len`.
@@ -214,11 +220,13 @@ impl WString {
         ptr: *const wchar_t,
         mut len: usize,
     ) -> Self {
-        let len2 = wcsnlen(ptr, len);
-        if len2 < len {
-            len = len2;
+        unsafe {
+            let len2 = wcsnlen(ptr, len);
+            if len2 < len {
+                len = len2;
+            }
+            Self::clone_from_raw_s_unchecked(ptr, len)
         }
-        Self::clone_from_raw_s_unchecked(ptr, len)
     }
 
     /// Creates [`WString`] from `ptr` and `len` without length check.
@@ -230,9 +238,11 @@ impl WString {
         ptr: *const wchar_t,
         len: usize,
     ) -> Self {
-        let slice = slice::from_raw_parts(ptr, len + 1);
-        Self {
-            inner: slice.to_vec().into_boxed_slice(),
+        unsafe {
+            let slice = slice::from_raw_parts(ptr, len + 1);
+            Self {
+                inner: slice.to_vec().into_boxed_slice(),
+            }
         }
     }
 }
@@ -390,14 +400,16 @@ impl AString {
     /// # Safety
     /// `v` must be a correct ANSI string.
     pub unsafe fn new_unchecked<T: Into<Vec<u8>>>(v: T) -> Self {
-        let mut v = v.into();
-        let len = strnlen(v.as_ptr(), v.len());
-        if len == v.len() {
-            v.reserve_exact(1);
-            v.push(0);
+        unsafe {
+            let mut v = v.into();
+            let len = strnlen(v.as_ptr(), v.len());
+            if len == v.len() {
+                v.reserve_exact(1);
+                v.push(0);
+            }
+            v.set_len(len + 1);
+            Self::new_nul_unchecked(v)
         }
-        v.set_len(len + 1);
-        Self::new_nul_unchecked(v)
     }
 
     /// Creates [`AString`] from `v` without a null-terminated check and any encoding checks.
@@ -446,7 +458,7 @@ impl AString {
     /// # Safety
     /// `ptr` must be a null-terminated ANSI string.
     pub unsafe fn clone_from_raw(ptr: *const u8) -> Self {
-        Self::clone_from_raw_s_unchecked(ptr, strlen(ptr))
+        unsafe { Self::clone_from_raw_s_unchecked(ptr, strlen(ptr)) }
     }
 
     /// Creates [`AString`] from `ptr` and `len`.
@@ -454,11 +466,13 @@ impl AString {
     /// # Safety
     /// `ptr` must be a null-terminated ANSI string.
     pub unsafe fn clone_from_raw_s(ptr: *const u8, mut len: usize) -> Self {
-        let len2 = strnlen(ptr, len);
-        if len2 < len {
-            len = len2;
+        unsafe {
+            let len2 = strnlen(ptr, len);
+            if len2 < len {
+                len = len2;
+            }
+            Self::clone_from_raw_s_unchecked(ptr, len)
         }
-        Self::clone_from_raw_s_unchecked(ptr, len)
     }
 
     /// Creates [`AString`] from `ptr` and `len` without length check.
@@ -470,9 +484,11 @@ impl AString {
         ptr: *const u8,
         len: usize,
     ) -> Self {
-        let slice = slice::from_raw_parts(ptr, len + 1);
-        Self {
-            inner: slice.to_vec().into_boxed_slice(),
+        unsafe {
+            let slice = slice::from_raw_parts(ptr, len + 1);
+            Self {
+                inner: slice.to_vec().into_boxed_slice(),
+            }
         }
     }
 }

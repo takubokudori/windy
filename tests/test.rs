@@ -117,11 +117,11 @@ pub mod tests {
         let sa = AString::try_from("test").unwrap();
         assert_eq!("test", sa.try_to_string().unwrap()); // ANSI -> UTF-8
         assert_eq!("test", sa.to_string_lossy()); // ANSI -> UTF-8 lossy
-                                                  // UTF-8 -> Unicode
+        // UTF-8 -> Unicode
         let sw = WString::try_from("test").unwrap();
         assert_eq!("test", sw.try_to_string().unwrap()); // Unicode -> UTF-8
         assert_eq!("test", sw.to_string_lossy()); // Unicode -> UTF-8 lossy
-                                                  // Unicode -> ANSI
+        // Unicode -> ANSI
         let sa = sw.to_astring().unwrap();
         assert_eq!("test", sa.try_to_string().unwrap());
         assert_eq!("test", sa.to_string_lossy());
@@ -129,7 +129,7 @@ pub mod tests {
         let sw = sa.to_wstring().unwrap();
         assert_eq!("test", sw.try_to_string().unwrap()); // ANSI -> UTF-8
         assert_eq!("test", sw.to_string_lossy()); // ANSI -> UTF-8 lossy
-                                                  // ANSI -> Unicode lossy
+        // ANSI -> Unicode lossy
         let sw = sa.to_wstring_lossy();
         assert_eq!("test", sw.try_to_string().unwrap()); // ANSI -> UTF-8
         assert_eq!("test", sw.to_string_lossy()); // ANSI -> UTF-8 lossy
@@ -160,7 +160,7 @@ pub mod tests {
         let sw = WString::try_from("スペシャルtest🍣").unwrap();
         assert_eq!("スペシャルtest🍣", sw.try_to_string().unwrap()); // Unicode -> UTF-8
         assert_eq!("スペシャルtest🍣", sw.to_string_lossy()); // Unicode -> UTF-8 lossy
-                                                              // Unicode -> ANSI (Invalid)
+        // Unicode -> ANSI (Invalid)
         assert_eq!(
             Err(conv_err!(@ansi ERROR_NO_UNICODE_TRANSLATION)),
             sw.to_astring()

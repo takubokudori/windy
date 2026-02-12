@@ -194,16 +194,18 @@ pub(crate) unsafe fn MultiByteToWideChar(
     lpWideCharStr: LPWSTR,
     cchWideChar: c_int,
 ) -> OsResult<c_int> {
-    match crate::raw::MultiByteToWideChar(
-        CodePage,
-        dwFlags,
-        lpMultiByteStr,
-        cbMultiByte,
-        lpWideCharStr,
-        cchWideChar,
-    ) {
-        0 => Err(GetLastError()),
-        x => Ok(x),
+    unsafe {
+        match raw::MultiByteToWideChar(
+            CodePage,
+            dwFlags,
+            lpMultiByteStr,
+            cbMultiByte,
+            lpWideCharStr,
+            cchWideChar,
+        ) {
+            0 => Err(GetLastError()),
+            x => Ok(x),
+        }
     }
 }
 
@@ -221,18 +223,20 @@ pub(crate) unsafe fn WideCharToMultiByte(
     lpDefaultChar: LPCSTR,
     lpUsedDefaultChar: LPBOOL,
 ) -> OsResult<c_int> {
-    match crate::raw::WideCharToMultiByte(
-        CodePage,
-        dwFlags,
-        lpWideCharStr,
-        cchWideChar,
-        lpMultiByteStr,
-        cbMultiByte,
-        lpDefaultChar,
-        lpUsedDefaultChar,
-    ) {
-        0 => Err(GetLastError()),
-        x => Ok(x),
+    unsafe {
+        match raw::WideCharToMultiByte(
+            CodePage,
+            dwFlags,
+            lpWideCharStr,
+            cchWideChar,
+            lpMultiByteStr,
+            cbMultiByte,
+            lpDefaultChar,
+            lpUsedDefaultChar,
+        ) {
+            0 => Err(GetLastError()),
+            x => Ok(x),
+        }
     }
 }
 

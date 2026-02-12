@@ -43,7 +43,7 @@ pub struct ANSI_STRING {
     pub Buffer: PSTR,
 }
 
-extern "C" {
+unsafe extern "C" {
     pub(crate) fn wcslen(s: *const wchar_t) -> usize;
 
     pub(crate) fn strlen(s: *const u8) -> usize;
@@ -53,7 +53,7 @@ extern "C" {
     pub(crate) fn strnlen(s: *const u8, len: usize) -> usize;
 }
 
-extern "system" {
+unsafe extern "system" {
     pub(crate) fn MultiByteToWideChar(
         CodePage: UINT,
         dwFlags: DWORD,
@@ -78,7 +78,7 @@ extern "system" {
 }
 
 #[link(name = "ntdll")]
-extern "system" {
+unsafe extern "system" {
     pub(crate) fn RtlInitUnicodeString(
         DestinationString: *mut UNICODE_STRING,
         SourceString: PCWSTR,
