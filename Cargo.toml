@@ -20,7 +20,7 @@ exclude = [
 default-target = "x86_64-pc-windows-msvc"
 
 [dev-dependencies]
-criterion = "0.3"
+criterion = "0.8"
 
 [[bench]]
 name = "string"
