@@ -289,6 +289,16 @@ impl TryFrom<&String> for WString {
     }
 }
 
+impl AsRef<WStr> for WString {
+    #[inline]
+    fn as_ref(&self) -> &WStr { self }
+}
+
+impl AsRef<[u16]> for WString {
+    #[inline]
+    fn as_ref(&self) -> &[u16] { self.as_bytes() }
+}
+
 impl From<&WStr> for WString {
     fn from(x: &WStr) -> Self {
         unsafe { Self::new_nul_unchecked(x.to_bytes_with_nul().to_vec()) }
@@ -502,6 +512,16 @@ impl TryFrom<&str> for AString {
 
     #[inline]
     fn try_from(x: &str) -> Result<Self, Self::Error> { Self::from_str(x) }
+}
+
+impl AsRef<AStr> for AString {
+    #[inline]
+    fn as_ref(&self) -> &AStr { self }
+}
+
+impl AsRef<[u8]> for AString {
+    #[inline]
+    fn as_ref(&self) -> &[u8] { self.as_bytes() }
 }
 
 impl TryFrom<String> for AString {
