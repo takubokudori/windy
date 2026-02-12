@@ -202,7 +202,7 @@ impl WString {
     ///
     /// # Safety
     /// `ptr` must be a null-terminated Unicode string.
-    pub unsafe fn clone_from_raw(ptr: *mut wchar_t) -> Self {
+    pub unsafe fn clone_from_raw(ptr: *const wchar_t) -> Self {
         Self::clone_from_raw_s_unchecked(ptr, wcslen(ptr))
     }
 
@@ -210,7 +210,10 @@ impl WString {
     ///
     /// # Safety
     /// `ptr` must be a null-terminated Unicode string.
-    pub unsafe fn clone_from_raw_s(ptr: *mut wchar_t, mut len: usize) -> Self {
+    pub unsafe fn clone_from_raw_s(
+        ptr: *const wchar_t,
+        mut len: usize,
+    ) -> Self {
         let len2 = wcsnlen(ptr, len);
         if len2 < len {
             len = len2;
@@ -224,10 +227,10 @@ impl WString {
     /// `ptr` must be a null-terminated Unicode string.
     #[inline]
     pub unsafe fn clone_from_raw_s_unchecked(
-        ptr: *mut wchar_t,
+        ptr: *const wchar_t,
         len: usize,
     ) -> Self {
-        let slice = slice::from_raw_parts_mut(ptr, len as usize + 1);
+        let slice = slice::from_raw_parts(ptr, len as usize + 1);
         Self {
             inner: slice.to_vec().into_boxed_slice(),
         }
@@ -442,7 +445,7 @@ impl AString {
     ///
     /// # Safety
     /// `ptr` must be a null-terminated ANSI string.
-    pub unsafe fn clone_from_raw(ptr: *mut u8) -> Self {
+    pub unsafe fn clone_from_raw(ptr: *const u8) -> Self {
         Self::clone_from_raw_s_unchecked(ptr, strlen(ptr))
     }
 
@@ -450,7 +453,7 @@ impl AString {
     ///
     /// # Safety
     /// `ptr` must be a null-terminated ANSI string.
-    pub unsafe fn clone_from_raw_s(ptr: *mut u8, mut len: usize) -> Self {
+    pub unsafe fn clone_from_raw_s(ptr: *const u8, mut len: usize) -> Self {
         let len2 = strnlen(ptr, len);
         if len2 < len {
             len = len2;
@@ -463,8 +466,11 @@ impl AString {
     /// # Safety
     /// `ptr` must be a null-terminated ANSI string.
     #[inline]
-    pub unsafe fn clone_from_raw_s_unchecked(ptr: *mut u8, len: usize) -> Self {
-        let slice = slice::from_raw_parts_mut(ptr, len as usize + 1);
+    pub unsafe fn clone_from_raw_s_unchecked(
+        ptr: *const u8,
+        len: usize,
+    ) -> Self {
+        let slice = slice::from_raw_parts(ptr, len as usize + 1);
         Self {
             inner: slice.to_vec().into_boxed_slice(),
         }
