@@ -83,7 +83,7 @@ impl WString {
 
     /// Returns &[`WStr`].
     #[inline]
-    pub fn as_c_str(&self) -> &WStr { &*self }
+    pub fn as_c_str(&self) -> &WStr { self }
 
     /// Returns &mut [`WStr`].
     #[inline]
@@ -230,7 +230,7 @@ impl WString {
         ptr: *const wchar_t,
         len: usize,
     ) -> Self {
-        let slice = slice::from_raw_parts(ptr, len as usize + 1);
+        let slice = slice::from_raw_parts(ptr, len + 1);
         Self {
             inner: slice.to_vec().into_boxed_slice(),
         }
@@ -365,7 +365,7 @@ impl AString {
     }
 
     #[inline]
-    pub fn as_c_str(&self) -> &AStr { &*self }
+    pub fn as_c_str(&self) -> &AStr { self }
 
     /// Returns &mut [`AStr`].
     #[inline]
@@ -470,7 +470,7 @@ impl AString {
         ptr: *const u8,
         len: usize,
     ) -> Self {
-        let slice = slice::from_raw_parts(ptr, len as usize + 1);
+        let slice = slice::from_raw_parts(ptr, len + 1);
         Self {
             inner: slice.to_vec().into_boxed_slice(),
         }

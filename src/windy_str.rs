@@ -211,7 +211,7 @@ impl WStr {
         ptr: *const wchar_t,
         len: usize,
     ) -> &'a Self {
-        let slice = slice::from_raw_parts(ptr, len as usize + 1);
+        let slice = slice::from_raw_parts(ptr, len + 1);
         Self::from_bytes_with_nul_unchecked(slice)
     }
 }
@@ -224,20 +224,13 @@ impl Eq for WStr {}
 
 impl PartialOrd for WStr {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        self.to_bytes().partial_cmp(&other.to_bytes())
+        Some(self.cmp(other))
     }
 }
 
 impl Ord for WStr {
     fn cmp(&self, other: &Self) -> Ordering {
-        self.to_bytes().cmp(&other.to_bytes())
-    }
-}
-
-#[cfg(feature = "std")]
-impl ToString for WStr {
-    fn to_string(&self) -> String {
-        self.try_to_string().expect("Failed to convert to utf8")
+        self.to_bytes().cmp(other.to_bytes())
     }
 }
 
@@ -391,7 +384,7 @@ impl AStr {
         ptr: *const u8,
         len: usize,
     ) -> &'a Self {
-        let slice = slice::from_raw_parts(ptr, len as usize + 1);
+        let slice = slice::from_raw_parts(ptr, len + 1);
         Self::from_bytes_with_nul_unchecked(slice)
     }
 }
@@ -404,20 +397,13 @@ impl Eq for AStr {}
 
 impl PartialOrd for AStr {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        self.to_bytes().partial_cmp(other.to_bytes())
+        Some(self.cmp(other))
     }
 }
 
 impl Ord for AStr {
     fn cmp(&self, other: &Self) -> Ordering {
-        self.to_bytes().cmp(&other.to_bytes())
-    }
-}
-
-#[cfg(feature = "std")]
-impl ToString for AStr {
-    fn to_string(&self) -> String {
-        self.try_to_string().expect("Failed to convert to utf8")
+        self.to_bytes().cmp(other.to_bytes())
     }
 }
 

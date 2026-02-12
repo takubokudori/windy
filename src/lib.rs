@@ -54,15 +54,13 @@ mod raw;
 #[cfg(feature = "std")]
 mod string;
 #[cfg(feature = "std")]
-mod traits;
+pub mod traits;
 mod windy_str;
 
 pub use ntstring::*;
 use raw::*;
 #[cfg(feature = "std")]
 pub use string::*;
-#[cfg(feature = "macros")]
-pub use windy_macros as macros;
 pub use windy_str::*;
 
 #[cfg(not(feature = "std"))]
@@ -294,6 +292,7 @@ where
 }
 
 #[cfg(feature = "std")]
+#[allow(clippy::uninit_vec)]
 pub(crate) fn wide_char_to_multi_byte_wrap(
     code_page: UINT,
     wc_flags: DWORD,
@@ -344,6 +343,7 @@ pub(crate) fn wide_char_to_multi_byte_wrap(
 /// Gets the required buffer size and gets a multi-byte string.
 #[inline]
 #[cfg(feature = "std")]
+#[allow(clippy::uninit_vec)]
 pub(crate) fn wide_char_to_multi_byte2(
     code_page: UINT,
     wc_flags: DWORD,
@@ -380,6 +380,7 @@ pub(crate) fn wide_char_to_multi_byte2(
 }
 
 #[cfg(feature = "std")]
+#[allow(clippy::uninit_vec)]
 pub(crate) fn multi_byte_to_wide_char_wrap(
     code_page: UINT,
     mb_flags: DWORD,
@@ -413,6 +414,7 @@ pub(crate) fn multi_byte_to_wide_char_wrap(
 /// Gets the required buffer size and gets a wide string.
 #[inline]
 #[cfg(feature = "std")]
+#[allow(clippy::uninit_vec)]
 pub(crate) fn multi_byte_to_wide_char2(
     code_page: UINT,
     mb_flags: DWORD,

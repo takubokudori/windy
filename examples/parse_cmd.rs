@@ -9,7 +9,7 @@ use windy::AString;
 #[cfg(feature = "std")]
 fn main() {
     let o = Command::new("cmd")
-        .args(&["/c", "ThisCommandDoesNotExist"])
+        .args(["/c", "ThisCommandDoesNotExist"])
         .output()
         .unwrap();
     let (stdout, stderr) = unsafe {
