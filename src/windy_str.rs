@@ -42,7 +42,7 @@ impl WStr {
 
     /// Returns the length of bytes.
     #[inline]
-    pub fn len(&self) -> usize { self.inner.len() }
+    pub fn len(&self) -> usize { self.inner.len() * size_of::<wchar_t>() }
 
     /// Returns `true` if the length of bytes is 0.
     #[inline]

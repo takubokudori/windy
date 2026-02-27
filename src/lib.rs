@@ -40,7 +40,7 @@
 //! ```toml
 //! [dependencies]
 //! windy = "0.3.1"
-//! windy-macros = "0.3.0"
+//! windy-macros = "0.2.0"
 //! ```
 //!
 //! # License
