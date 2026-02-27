@@ -29,8 +29,10 @@ pub mod tests {
         assert_eq!(&[0x00], x.as_bytes_with_nul());
         let x = wn!(vec![0x00]); // empty vec
         assert_eq!(&[0x00], x.as_bytes_with_nul());
+        assert_eq!(x.len(), 2);
         let x = wn!(vec![0x74, 0x65, 0x73, 0x74]); // test
         assert_eq!(&[0x74, 0x65, 0x73, 0x74, 0x00], x.as_bytes_with_nul());
+        assert_eq!(x.len(), 10);
         let x = wn!(vec![0x74, 0x65, 0x73, 0x74, 0x00]); // test\0
         assert_eq!(&[0x74, 0x65, 0x73, 0x74, 0x00], x.as_bytes_with_nul());
         let x = wn!(vec![0x74, 0x65, 0x00, 0x73, 0x74]); // te\0st
@@ -50,8 +52,10 @@ pub mod tests {
         let x = &mut [0x0074, 0x0065, 0x0073, 0x0074, 0x0000];
         unsafe {
             let s = WStr::from_raw(x.as_mut_ptr());
+            assert_eq!(s.len(), 10);
             assert_eq!("test", s.to_string_lossy());
             let s = WStr::from_raw_s(x.as_mut_ptr(), 3);
+            assert_eq!(s.len(), 8);
             assert_eq!("tes", s.to_string_lossy());
             let s = WStr::from_raw_s(x.as_mut_ptr(), 4);
             assert_eq!("test", s.to_string_lossy());
@@ -76,8 +80,10 @@ pub mod tests {
     fn test_astring() {
         let x = an!(vec![]); // empty vec
         assert_eq!(&[0x00], x.as_bytes_with_nul());
+        assert_eq!(x.len(), 1);
         let x = an!(vec![0x74, 0x65, 0x73, 0x74]); // test
         assert_eq!(&[0x74, 0x65, 0x73, 0x74, 0x00], x.as_bytes_with_nul());
+        assert_eq!(x.len(), 5);
         let x = an!(vec![0x74, 0x65, 0x73, 0x74, 0x00]); // test\0
         assert_eq!(&[0x74, 0x65, 0x73, 0x74, 0x00], x.as_bytes_with_nul());
         let x = an!(vec![0x74, 0x65, 0x00, 0x73, 0x74, 0x00]); // te\0st\0
@@ -89,8 +95,10 @@ pub mod tests {
         unsafe {
             let s = AStr::from_raw(x.as_mut_ptr());
             assert_eq!("test", s.to_string_lossy());
+            assert_eq!(s.len(), 5);
             let s = AStr::from_raw_s(x.as_mut_ptr(), 3);
             assert_eq!("tes", s.to_string_lossy());
+            assert_eq!(s.len(), 4);
             let s = AStr::from_raw_s(x.as_mut_ptr(), 4);
             assert_eq!("test", s.to_string_lossy());
             let s = AStr::from_raw_s(x.as_mut_ptr(), 5);

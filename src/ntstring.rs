@@ -1,7 +1,7 @@
 // Copyright takubokudori.
 // This source code is licensed under the MIT or Apache-2.0 license.
-#![allow(clippy::missing_safety_doc)]
 use crate::{
+    __lib::ptr::null_mut,
     AStr, WStr,
     raw::{
         ANSI_STRING, RtlInitAnsiString, RtlInitUnicodeString, UNICODE_STRING,
@@ -10,7 +10,6 @@ use crate::{
 use core::ops;
 
 /// Represents [UNICODE_STRING](https://docs.microsoft.com/en-us/windows/win32/api/ntdef/ns-ntdef-_unicode_string).
-#[repr(C)]
 #[derive(Debug, Clone)]
 pub struct UnicodeString<'a> {
     us: UNICODE_STRING,
@@ -23,7 +22,7 @@ impl<'a> UnicodeString<'a> {
         let mut us = UNICODE_STRING {
             Length: 0,
             MaximumLength: 0,
-            Buffer: 0 as _,
+            Buffer: null_mut(),
         };
         unsafe {
             RtlInitUnicodeString(&mut us, s.as_ptr());
@@ -33,9 +32,6 @@ impl<'a> UnicodeString<'a> {
 
     /// Returns &[`UNICODE_STRING`].
     pub fn as_raw(&self) -> &UNICODE_STRING { &self.us }
-
-    /// Returns &mut [`UNICODE_STRING`].
-    pub unsafe fn as_mut_raw(&mut self) -> &mut UNICODE_STRING { &mut self.us }
 
     /// Returns *const [`UNICODE_STRING`].
     pub fn as_ptr(&self) -> *const UNICODE_STRING { &self.us as _ }
@@ -50,8 +46,13 @@ impl<'a> ops::Deref for UnicodeString<'a> {
     fn deref(&self) -> &Self::Target { self.s }
 }
 
+impl PartialEq for UnicodeString<'_> {
+    fn eq(&self, other: &Self) -> bool { self.s.eq(other.s) }
+}
+
+impl Eq for UnicodeString<'_> {}
+
 /// Represents [ANSI_STRING](https://docs.microsoft.com/en-us/windows/win32/api/ntdef/ns-ntdef-string).
-#[repr(C)]
 #[derive(Debug, Clone)]
 pub struct AnsiString<'a> {
     us: ANSI_STRING,
@@ -64,7 +65,7 @@ impl<'a> AnsiString<'a> {
         let mut us = ANSI_STRING {
             Length: 0,
             MaximumLength: 0,
-            Buffer: 0 as _,
+            Buffer: null_mut(),
         };
         unsafe {
             RtlInitAnsiString(&mut us, s.as_ptr());
@@ -74,9 +75,6 @@ impl<'a> AnsiString<'a> {
 
     /// Returns &[`ANSI_STRING`].
     pub fn as_raw(&self) -> &ANSI_STRING { &self.us }
-
-    /// Returns &mut [`ANSI_STRING`].
-    pub unsafe fn as_mut_raw(&mut self) -> &mut ANSI_STRING { &mut self.us }
 
     /// Returns *const [`ANSI_STRING`].
     pub fn as_ptr(&self) -> *const ANSI_STRING { &self.us as _ }
@@ -90,3 +88,9 @@ impl<'a> ops::Deref for AnsiString<'a> {
 
     fn deref(&self) -> &Self::Target { self.s }
 }
+
+impl PartialEq for AnsiString<'_> {
+    fn eq(&self, other: &Self) -> bool { self.s.eq(other.s) }
+}
+
+impl Eq for AnsiString<'_> {}

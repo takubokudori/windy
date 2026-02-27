@@ -398,6 +398,7 @@ impl AString {
     /// Creates [`AString`] from `v` without any encoding checks.
     ///
     /// # Safety
+    ///
     /// `v` must be a correct ANSI string.
     pub unsafe fn new_unchecked<T: Into<Vec<u8>>>(v: T) -> Self {
         unsafe {
@@ -415,6 +416,7 @@ impl AString {
     /// Creates [`AString`] from `v` without a null-terminated check and any encoding checks.
     ///
     /// # Safety
+    ///
     /// `v` must be a null-terminated ANSI string.
     #[inline]
     pub unsafe fn new_nul_unchecked<T: Into<Vec<u8>>>(v: T) -> Self {
@@ -464,6 +466,7 @@ impl AString {
     /// Creates [`AString`] from `ptr` and `len`.
     ///
     /// # Safety
+    ///
     /// `ptr` must be a null-terminated ANSI string.
     pub unsafe fn clone_from_raw_s(ptr: *const u8, mut len: usize) -> Self {
         unsafe {
@@ -478,6 +481,7 @@ impl AString {
     /// Creates [`AString`] from `ptr` and `len` without length check.
     ///
     /// # Safety
+    ///
     /// `ptr` must be a null-terminated ANSI string.
     #[inline]
     pub unsafe fn clone_from_raw_s_unchecked(

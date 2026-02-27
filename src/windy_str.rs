@@ -42,7 +42,7 @@ impl WStr {
 
     /// Returns the length of bytes.
     #[inline]
-    pub fn len(&self) -> usize { self.inner.len() * size_of::<wchar_t>() }
+    pub fn len(&self) -> usize { size_of_val(&self.inner) }
 
     /// Returns `true` if the length of bytes is 0.
     #[inline]
@@ -144,6 +144,7 @@ impl WStr {
     /// Creates a new `&WStr` from `bytes`.
     ///
     /// # Safety
+    ///
     /// `bytes` must be a correct Unicode string.
     #[inline]
     pub unsafe fn from_bytes_with_nul_unchecked(bytes: &[u16]) -> &Self {
@@ -153,6 +154,7 @@ impl WStr {
     /// Creates a new `&WStr` from `bytes`.
     ///
     /// # Safety
+    ///
     /// `bytes` must be a correct Unicode string.
     #[inline]
     pub unsafe fn from_bytes_with_nul_unchecked_mut(
@@ -164,6 +166,7 @@ impl WStr {
     /// Creates &[`WStr`] from `ptr`.
     ///
     /// # Safety
+    ///
     /// `ptr` must be a null-terminated Unicode string.
     pub unsafe fn from_raw<'a>(ptr: *const wchar_t) -> &'a Self {
         unsafe { Self::from_raw_s_unchecked(ptr, wcslen(ptr)) }
@@ -172,6 +175,7 @@ impl WStr {
     /// Creates &[`WStr`] from `ptr` and `len`.
     ///
     /// # Safety
+    ///
     /// `ptr` must be a null-terminated unicode string.
     pub unsafe fn from_raw_s<'a>(
         ptr: *const wchar_t,
@@ -189,6 +193,7 @@ impl WStr {
     /// Creates &[`WStr`] from `ptr` and `len` without length check.
     ///
     /// # Safety
+    ///
     /// `ptr` must be a null-terminated Unicode string.
     #[inline]
     pub unsafe fn from_raw_s_unchecked<'a>(
@@ -319,6 +324,7 @@ impl AStr {
     /// Creates a new `&AStr` from `bytes`.
     ///
     /// # Safety
+    ///
     /// `bytes` must be a correct ANSI string.
     #[inline]
     pub unsafe fn from_bytes_with_nul_unchecked(bytes: &[u8]) -> &Self {
@@ -328,6 +334,7 @@ impl AStr {
     /// Creates a new `mut &AStr` from `bytes`.
     ///
     /// # Safety
+    ///
     /// `bytes` must be a correct ANSI string.
     #[inline]
     pub unsafe fn from_bytes_with_nul_unchecked_mut(
@@ -339,6 +346,7 @@ impl AStr {
     /// Creates &[`AStr`] from `ptr`.
     ///
     /// # Safety
+    ///
     /// `ptr` must be a null-terminated ANSI string.
     pub unsafe fn from_raw<'a>(ptr: *const u8) -> &'a Self {
         unsafe { Self::from_raw_s_unchecked(ptr, strlen(ptr)) }
@@ -361,6 +369,7 @@ impl AStr {
     /// Creates &[`AStr`] from `ptr` and `len` without length check.
     ///
     /// # Safety
+    ///
     /// `ptr` must be a null-terminated ANSI string.
     #[inline]
     pub unsafe fn from_raw_s_unchecked<'a>(
