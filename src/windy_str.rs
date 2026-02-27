@@ -5,6 +5,9 @@ use crate::{
     *,
 };
 
+#[cfg(feature = "std")]
+use crate::convert::*;
+
 macro_rules! str_impl_debug {
     ($x:ident) => {
         impl fmt::Debug for $x {
@@ -74,13 +77,8 @@ impl WStr {
     /// If an input has an invalid character, this function returns [`ConvertError::ConvertToUtf8Error`].
     pub fn try_to_string(&self) -> ConvertResult<String> {
         unsafe {
-            let mut mb = wide_char_to_multi_byte_wrap(
-                CP_UTF8,
-                WC_NO_BEST_FIT_CHARS | WC_ERR_INVALID_CHARS,
-                self.to_bytes_with_nul(),
-                false,
-            )
-            .map_err(conv_err!(@utf8))?;
+            let mut mb = wide_to_utf8(self.to_bytes_with_nul())
+                .map_err(conv_err!(@utf8))?;
             mb.set_len(mb.len() - 1); // remove NULL
             // valid UTF-8 string
             Ok(String::from_utf8_unchecked(mb))
@@ -93,14 +91,9 @@ impl WStr {
     /// The function replaces Illegal sequences with with `\u{FFFD}`.
     pub fn to_string_lossy(&self) -> String {
         unsafe {
-            let mut mb = wide_char_to_multi_byte_wrap(
-                CP_UTF8,
-                WC_NO_BEST_FIT_CHARS,
-                self.to_bytes_with_nul(),
-                false,
-            )
-            .map_err(conv_err!(@utf8))
-            .unwrap();
+            let mut mb = wide_to_utf8_lossy(self.to_bytes_with_nul())
+                .map_err(conv_err!(@utf8))
+                .unwrap();
             mb.set_len(mb.len() - 1); // remove NULL
             // valid UTF-8 string
             String::from_utf8_unchecked(mb)
@@ -125,13 +118,8 @@ impl WStr {
     /// assert_eq!(s, s2);
     /// ```
     pub fn to_astring(&self) -> ConvertResult<AString> {
-        let mb = wide_char_to_multi_byte_wrap(
-            CP_ACP,
-            WC_NO_BEST_FIT_CHARS,
-            self.to_bytes_with_nul(),
-            true,
-        )
-        .map_err(conv_err!(@ansi))?;
+        let mb =
+            wide_to_mb(self.to_bytes_with_nul()).map_err(conv_err!(@ansi))?;
         // valid ANSI string
         unsafe { Ok(AString::new_unchecked(mb)) }
     }
@@ -148,13 +136,7 @@ impl WStr {
     /// assert_eq!(s, s2);
     /// ```
     pub fn to_astring_lossy(&self) -> AString {
-        let mb = wide_char_to_multi_byte_wrap(
-            CP_ACP,
-            WC_NO_BEST_FIT_CHARS,
-            self.to_bytes_with_nul(),
-            false,
-        )
-        .unwrap();
+        let mb = wide_to_mb_lossy(self.to_bytes_with_nul()).unwrap();
         // valid ANSI string
         unsafe { AString::new_unchecked(mb) }
     }
@@ -310,12 +292,7 @@ impl AStr {
     /// ```
     #[cfg(feature = "std")]
     pub fn to_wstring(&self) -> ConvertResult<WString> {
-        let wc = multi_byte_to_wide_char_wrap(
-            CP_ACP,
-            MB_ERR_INVALID_CHARS,
-            self.to_bytes(),
-        )
-        .map_err(conv_err!(@unicode))?;
+        let wc = mb_to_wide(self.to_bytes()).map_err(conv_err!(@unicode))?;
         // valid Unicode string
         unsafe { Ok(WString::_new(wc)) }
     }
@@ -332,7 +309,7 @@ impl AStr {
     /// ```
     #[cfg(feature = "std")]
     pub fn to_wstring_lossy(&self) -> WString {
-        let wc = multi_byte_to_wide_char_wrap(CP_ACP, 0, self.to_bytes())
+        let wc = mb_to_wide_lossy(self.to_bytes())
             .map_err(conv_err!(@unicode))
             .unwrap();
         // valid Unicode string

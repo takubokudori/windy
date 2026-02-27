@@ -6,6 +6,7 @@ use crate::{
         fmt::Write,
         ops, slice,
     },
+    convert::*,
     *,
 };
 
@@ -106,6 +107,7 @@ impl WString {
     /// Creates [`WString`] from [`Vec`]<u16> without any encoding checks.
     ///
     /// # Safety
+    ///
     /// `v` must be a correct Unicode string.
     pub unsafe fn new_unchecked<T: Into<Vec<u16>>>(v: T) -> Self {
         unsafe { Self::_new(v.into()) }
@@ -114,6 +116,7 @@ impl WString {
     /// Creates [`WString`] from [`Vec`]<u8> without any encoding checks.
     ///
     /// # Safety
+    ///
     /// `v` must be a correct Unicode string.
     pub unsafe fn new_c_unchecked<T: Into<Vec<u8>>>(v: T) -> Self {
         unsafe { Self::_new2(v.into()) }
@@ -152,6 +155,7 @@ impl WString {
     /// Creates [`WString`] from `v` without a null-terminated check and any encoding checks.
     ///
     /// # Safety
+    ///
     /// `v` must be a null-terminated Unicode string.
     pub unsafe fn new_nul_unchecked<T: Into<Vec<u16>>>(v: T) -> Self {
         unsafe {
@@ -177,13 +181,8 @@ impl WString {
     /// println!("{:?}", s);
     /// ```
     #[allow(clippy::should_implement_trait)]
-    pub fn from_str(x: &str) -> ConvertResult<Self> {
-        let wb = multi_byte_to_wide_char_wrap(
-            CP_UTF8,
-            MB_ERR_INVALID_CHARS,
-            x.as_bytes(),
-        )
-        .map_err(conv_err!(@unicode))?;
+    pub fn from_str(s: &str) -> ConvertResult<Self> {
+        let wb = utf8_to_wide(s).map_err(conv_err!(@unicode))?;
         // valid UTF-8 string
         unsafe { Ok(Self::_new(wb)) }
     }
@@ -197,9 +196,8 @@ impl WString {
     /// let s = WString::from_str_lossy("test🍣");
     /// println!("{:?}", s);
     /// ```
-    pub fn from_str_lossy(x: &str) -> Self {
-        let wb =
-            multi_byte_to_wide_char_wrap(CP_UTF8, 0, x.as_bytes()).unwrap();
+    pub fn from_str_lossy(s: &str) -> Self {
+        let wb = utf8_to_wide_lossy(s).unwrap();
         // valid UTF-8 string
         unsafe { Self::_new(wb) }
     }
@@ -207,6 +205,7 @@ impl WString {
     /// Creates [`WString`] from `ptr`.
     ///
     /// # Safety
+    ///
     /// `ptr` must be a null-terminated Unicode string.
     pub unsafe fn clone_from_raw(ptr: *const wchar_t) -> Self {
         unsafe { Self::clone_from_raw_s_unchecked(ptr, wcslen(ptr)) }
@@ -232,6 +231,7 @@ impl WString {
     /// Creates [`WString`] from `ptr` and `len` without length check.
     ///
     /// # Safety
+    ///
     /// `ptr` must be a null-terminated Unicode string.
     #[inline]
     pub unsafe fn clone_from_raw_s_unchecked(

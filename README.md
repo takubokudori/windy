@@ -21,7 +21,7 @@ Add the following lines to your Cargo.toml:
 
 ```toml
 [dependencies]
-windy = "0.2.0"
+windy = "0.3.1"
 ```
 
 # Example
@@ -60,8 +60,8 @@ time.
 
 ```toml
 [dependencies]
-windy = "0.3.0"
-windy-macros = "0.1.1"
+windy = "0.3.1"
+windy-macros = "0.2.0"
 ```
 
 ## Example

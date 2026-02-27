@@ -11,7 +11,7 @@ use core::ops;
 
 /// Represents [UNICODE_STRING](https://docs.microsoft.com/en-us/windows/win32/api/ntdef/ns-ntdef-_unicode_string).
 #[repr(C)]
-#[derive(Debug, Clone, Eq, PartialEq)]
+#[derive(Debug, Clone)]
 pub struct UnicodeString<'a> {
     us: UNICODE_STRING,
     s: &'a WStr,
@@ -52,7 +52,7 @@ impl<'a> ops::Deref for UnicodeString<'a> {
 
 /// Represents [ANSI_STRING](https://docs.microsoft.com/en-us/windows/win32/api/ntdef/ns-ntdef-string).
 #[repr(C)]
-#[derive(Debug, Clone, Eq, PartialEq)]
+#[derive(Debug, Clone)]
 pub struct AnsiString<'a> {
     us: ANSI_STRING,
     s: &'a AStr,
