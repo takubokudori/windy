@@ -48,7 +48,7 @@ fn concat_slice<T: Clone>(x: &[T], y: &[T]) -> Vec<T> {
     inner
 }
 
-/// Represents a wide string (Unicode string).
+/// Represents a null-terminated wide string (Unicode string).
 #[repr(C)]
 #[derive(Clone, PartialOrd, PartialEq, Eq, Ord, Hash)]
 pub struct WString {
@@ -352,7 +352,7 @@ impl ops::Add<&WStr> for WString {
     }
 }
 
-/// Represents ANSI string.
+/// Represents a null-terminated ANSI string.
 #[repr(C)]
 #[derive(Clone, PartialOrd, PartialEq, Eq, Ord, Hash)]
 pub struct AString {
@@ -374,6 +374,7 @@ impl AString {
         &self.as_bytes_with_nul()[..self.inner.len() - 1]
     }
 
+    /// Returns &[`AStr`]
     #[inline]
     pub fn as_c_str(&self) -> &AStr { self }
 

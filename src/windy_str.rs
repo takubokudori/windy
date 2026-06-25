@@ -27,8 +27,8 @@ macro_rules! str_impl_debug {
     };
 }
 
-/// Represents a borrowed Unicode string.
-#[repr(C)]
+/// Represents a borrowed null-terminated Unicode string.
+#[repr(transparent)]
 pub struct WStr {
     inner: [wchar_t],
 }
@@ -51,6 +51,7 @@ impl WStr {
     #[inline]
     pub fn to_bytes_with_nul(&self) -> &[u16] { &self.inner }
 
+    #[inline]
     pub fn to_bytes(&self) -> &[u16] {
         let bytes = self.to_bytes_with_nul();
         &bytes[..bytes.len() - 1]
@@ -88,7 +89,7 @@ impl WStr {
     #[cfg(feature = "std")]
     /// Converts [`WStr`] to UTF-8 string.
     ///
-    /// The function replaces Illegal sequences with with `\u{FFFD}`.
+    /// The function replaces Illegal sequences with `\u{FFFD}`.
     pub fn to_string_lossy(&self) -> String {
         unsafe {
             let mut mb = wide_to_utf8_lossy(self.to_bytes_with_nul())
@@ -225,8 +226,8 @@ impl Ord for WStr {
     }
 }
 
-/// Represents a borrowed ANSI string.
-#[repr(C)]
+/// Represents a borrowed null-terminated ANSI string.
+#[repr(transparent)]
 pub struct AStr {
     inner: [u8],
 }
@@ -399,6 +400,26 @@ impl Ord for AStr {
     fn cmp(&self, other: &Self) -> Ordering {
         self.to_bytes().cmp(other.to_bytes())
     }
+}
+
+impl AsRef<WStr> for WStr {
+    #[inline]
+    fn as_ref(&self) -> &WStr { self }
+}
+
+impl AsRef<[u16]> for WStr {
+    #[inline]
+    fn as_ref(&self) -> &[u16] { self.to_bytes_with_nul() }
+}
+
+impl AsRef<AStr> for AStr {
+    #[inline]
+    fn as_ref(&self) -> &AStr { self }
+}
+
+impl AsRef<[u8]> for AStr {
+    #[inline]
+    fn as_ref(&self) -> &[u8] { self.to_bytes_with_nul() }
 }
 
 str_impl_debug!(WStr);
