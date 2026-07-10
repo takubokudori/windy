@@ -1,70 +1,166 @@
 // Copyright takubokudori.
 // This source code is licensed under the MIT or Apache-2.0 license.
 use crate::{
-    __lib::ptr::{null, null_mut},
+    __lib,
+    __lib::{
+        mem::MaybeUninit,
+        ptr::{null, null_mut},
+    },
+    ConvertError, ConvertResult, ERROR_INSUFFICIENT_BUFFER,
+    ERROR_INVALID_PARAMETER, ERROR_NO_UNICODE_TRANSLATION,
+    MB_ERR_INVALID_CHARS,
     raw::*,
 };
 
-pub(crate) const CP_ACP: UINT = 0;
-pub(crate) const CP_UTF8: UINT = 65001;
-pub(crate) const MB_ERR_INVALID_CHARS: DWORD = 0x8;
-pub(crate) const WC_ERR_INVALID_CHARS: DWORD = 0x80;
-pub(crate) const WC_NO_BEST_FIT_CHARS: DWORD = 0x400;
-pub(crate) const ERROR_INVALID_PARAMETER: DWORD = 0x57;
-pub(crate) const ERROR_INSUFFICIENT_BUFFER: DWORD = 0x7a;
-pub(crate) const ERROR_NO_UNICODE_TRANSLATION: DWORD = 0x459;
-
-pub(crate) type OsResult<T> = Result<T, u32>;
-
-pub(crate) fn utf8_to_wide_lossy(x: &str) -> OsResult<Vec<u16>> {
-    // UTF-8 to Unicode is loss less
-    multi_byte_to_wide_char_wrap(CP_UTF8, 0, x.as_bytes())
-}
-
-pub(crate) fn utf8_to_wide(x: &str) -> OsResult<Vec<u16>> {
-    // UTF-8 to Unicode is loss less
-    multi_byte_to_wide_char_wrap(CP_UTF8, MB_ERR_INVALID_CHARS, x.as_bytes())
-}
-
-pub(crate) fn wide_to_utf8(x: &[u16]) -> OsResult<Vec<u8>> {
-    // Unicode to UTF-8 is loss less
-    wide_char_to_multi_byte_wrap(
-        CP_UTF8,
-        WC_NO_BEST_FIT_CHARS | WC_ERR_INVALID_CHARS,
-        x,
-        false,
+#[inline]
+fn is_special_code_page(code_page: u32) -> bool {
+    matches!(
+        code_page,
+        42 | 50220 | 50221 | 50222 | 50225 | 50227 | 50229 | 52936 | 57002
+            ..=57011 | 65000
     )
 }
 
-pub(crate) fn wide_to_utf8_lossy(x: &[u16]) -> OsResult<Vec<u8>> {
-    // Unicode to UTF-8 is loss less
-    wide_char_to_multi_byte_wrap(CP_UTF8, WC_NO_BEST_FIT_CHARS, x, false)
+#[cfg(feature = "std")]
+/// Converts a multibyte string in `code_page` to a wide string with strict validation.
+pub(crate) fn mb_to_wide(code_page: u32, x: &[u8]) -> ConvertResult<Vec<u16>> {
+    // 特定のコードページはフラグを 0 にしなければならない
+    let mb_flags = if is_special_code_page(code_page) {
+        0
+    } else {
+        MB_ERR_INVALID_CHARS
+    };
+    multi_byte_to_wide_char_wrap(code_page, mb_flags, x)
 }
 
-pub(crate) fn mb_to_wide(x: &[u8]) -> OsResult<Vec<u16>> {
-    multi_byte_to_wide_char_wrap(CP_ACP, MB_ERR_INVALID_CHARS, x)
+#[cfg(feature = "std")]
+/// Converts a multibyte string in `code_page` to a wide string using API-defined replacement.
+pub(crate) fn mb_to_wide_lossy(
+    code_page: u32,
+    x: &[u8],
+) -> ConvertResult<Vec<u16>> {
+    multi_byte_to_wide_char_wrap(code_page, 0, x)
 }
 
-pub(crate) fn mb_to_wide_lossy(x: &[u8]) -> OsResult<Vec<u16>> {
-    multi_byte_to_wide_char_wrap(CP_ACP, 0, x)
+#[cfg(feature = "std")]
+/// Converts a wide string to a multibyte string in `code_page` with best-fit prevention.
+pub(crate) fn wide_to_mb(code_page: u32, x: &[u16]) -> ConvertResult<Vec<u8>> {
+    if code_page == crate::CP_UTF8 {
+        String::from_utf16(x)
+            .map(|x| x.into_bytes())
+            .map_err(|_| ConvertError::ConvertToUnicodeError)
+    } else {
+        let (wc_flags, query_used_default_char) =
+            if is_special_code_page(code_page) || code_page == 54936 {
+                (0, false)
+            } else {
+                (crate::WC_NO_BEST_FIT_CHARS, true)
+            };
+        let (v, used_default_char) = wide_char_to_multi_byte_wrap(
+            code_page,
+            wc_flags,
+            x,
+            query_used_default_char,
+        )?;
+        if used_default_char {
+            return Err(ConvertError::ConvertToAnsiError);
+        }
+        Ok(v)
+    }
 }
 
-pub(crate) fn wide_to_mb(x: &[u16]) -> OsResult<Vec<u8>> {
-    wide_char_to_multi_byte_wrap(CP_ACP, WC_NO_BEST_FIT_CHARS, x, true)
+#[cfg(feature = "std")]
+/// Converts a wide string to a multibyte string in `code_page` using API-defined replacement.
+pub(crate) fn wide_to_mb_lossy(
+    code_page: u32,
+    x: &[u16],
+) -> ConvertResult<Vec<u8>> {
+    if code_page == crate::CP_UTF8 {
+        String::from_utf16(x)
+            .map(|x| x.into_bytes())
+            .map_err(|_| ConvertError::ConvertToUnicodeError)
+    } else {
+        let (wc_flags, query_used_default_char) =
+            if is_special_code_page(code_page) {
+                (0, false)
+            } else if code_page == 54936 {
+                (crate::WC_ERR_INVALID_CHARS, false)
+            } else {
+                (crate::WC_NO_BEST_FIT_CHARS, true)
+            };
+        Ok(wide_char_to_multi_byte_wrap(
+            code_page,
+            wc_flags,
+            x,
+            query_used_default_char,
+        )?
+        .0)
+    }
 }
 
-pub(crate) fn wide_to_mb_lossy(x: &[u16]) -> OsResult<Vec<u8>> {
-    wide_char_to_multi_byte_wrap(CP_ACP, WC_NO_BEST_FIT_CHARS, x, false)
+#[cfg(feature = "std")]
+pub(crate) fn mb_to_mb(
+    old_code_page: u32,
+    new_code_page: u32,
+    x: &[u8],
+) -> ConvertResult<Vec<u8>> {
+    if old_code_page == new_code_page {
+        return Ok(x.to_vec());
+    }
+    let wide = mb_to_wide(old_code_page, x)?;
+
+    wide_to_mb(new_code_page, &wide)
 }
 
-/// Safe wrapper function of MultiByteToWideChar.
+#[cfg(feature = "std")]
+pub(crate) fn mb_to_mb_lossy(
+    old_code_page: u32,
+    new_code_page: u32,
+    x: &[u8],
+) -> ConvertResult<Vec<u8>> {
+    if old_code_page == new_code_page {
+        return Ok(x.to_vec());
+    }
+    let wide = mb_to_wide_lossy(old_code_page, x)?;
+
+    wide_to_mb_lossy(new_code_page, &wide)
+}
+
+/// Validates that `x` is decodable in `code_page` and returns the required wide-character count.
+pub(crate) fn validate_mb(code_page: u32, x: &[u8]) -> ConvertResult<usize> {
+    let x = if x.is_empty() { &[0] } else { x };
+    let mb_flags = if is_special_code_page(code_page) {
+        0
+    } else {
+        MB_ERR_INVALID_CHARS
+    };
+    match multi_byte_to_wide_char(code_page, mb_flags, x, &mut [], true) {
+        Ok(x) => Ok(x),
+        Err(ConvertError::ConvertToAnsiError)
+        | Err(ConvertError::ConvertToUnicodeError) => {
+            Err(ConvertError::InvalidAnsiString)
+        }
+        Err(e) => Err(e),
+    }
+}
+
+pub(crate) fn validate_wide(x: &[u16]) -> ConvertResult<()> {
+    let x = if x.is_empty() { &[0] } else { x };
+    if __lib::char::decode_utf16(x.iter().copied()).all(|r| r.is_ok()) {
+        return Ok(());
+    }
+
+    Err(ConvertError::InvalidUnicodeString)
+}
+
 #[inline(always)]
 fn multi_byte_to_wide_char(
     code_page: UINT,
     mb_flags: DWORD,
     mb_bytes: &[u8],
-    wc_bytes: &mut [u16],
-) -> OsResult<usize> {
+    wc_bytes: &mut [MaybeUninit<u16>],
+    query_required_len: bool,
+) -> ConvertResult<usize> {
     unsafe {
         match MultiByteToWideChar(
             code_page,
@@ -73,30 +169,82 @@ fn multi_byte_to_wide_char(
             mb_bytes
                 .len()
                 .try_into()
-                .map_err(|_| ERROR_INVALID_PARAMETER)?,
-            wc_bytes.as_mut_ptr(),
-            wc_bytes
-                .len()
-                .try_into()
-                .map_err(|_| ERROR_INVALID_PARAMETER)?,
+                .map_err(|_| ConvertError::TryFromIntError)?,
+            wc_bytes.as_mut_ptr() as *mut u16,
+            if query_required_len {
+                0
+            } else {
+                wc_bytes
+                    .len()
+                    .try_into()
+                    .map_err(|_| ConvertError::TryFromIntError)?
+            },
         ) {
-            0 => Err(GetLastError()),
+            0 => match GetLastError() {
+                ERROR_INVALID_PARAMETER => {
+                    Err(ConvertError::InvalidCodePage(code_page))
+                }
+                ERROR_INSUFFICIENT_BUFFER => {
+                    Err(ConvertError::InsufficientBuffer)
+                }
+                ERROR_NO_UNICODE_TRANSLATION => {
+                    Err(ConvertError::ConvertToUnicodeError)
+                }
+                e => Err(ConvertError::OsError(e)),
+            },
             x => Ok(x as usize),
         }
     }
 }
 
-/// Safe wrapper function of WideCharToMultiByte.
+#[cfg(feature = "std")]
+fn multi_byte_to_wide_char_wrap(
+    code_page: UINT,
+    mb_flags: DWORD,
+    x: &[u8],
+) -> ConvertResult<Vec<u16>> {
+    let mut ret: Vec<u16> = Vec::with_capacity(x.len());
+    let r = ret.spare_capacity_mut();
+
+    match multi_byte_to_wide_char(code_page, mb_flags, x, r, false) {
+        Ok(x) => {
+            unsafe {
+                ret.set_len(x);
+            }
+            Ok(ret)
+        }
+        Err(ConvertError::InsufficientBuffer) => {
+            let len = multi_byte_to_wide_char(code_page, mb_flags, x, r, true)?;
+            ret.reserve_exact(len - ret.len());
+            let r = ret.spare_capacity_mut();
+            let len2 =
+                multi_byte_to_wide_char(code_page, mb_flags, x, r, false)?;
+            assert_eq!(len, len2);
+            unsafe {
+                ret.set_len(len);
+            }
+            Ok(ret)
+        }
+        Err(e) => Err(e),
+    }
+}
+
 #[inline(always)]
-fn wide_char_to_multi_byte<'a>(
+#[allow(unused)]
+fn wide_char_to_multi_byte(
     code_page: UINT,
     wc_flags: DWORD,
     wc_bytes: &[u16],
-    mb_bytes: &mut [u8],
-    default_char: impl Into<Option<u8>>,
-    used_default_char: impl Into<Option<&'a mut i32>>,
-) -> OsResult<usize> {
-    let dc = default_char.into().map_or(null(), |x| &x);
+    mb_bytes: &mut [MaybeUninit<u8>],
+    query_required_len: bool,
+    query_used_default_char: bool,
+) -> ConvertResult<(usize, bool)> {
+    let mut used_default_char = 0;
+    let ptr_udc = if query_used_default_char {
+        &mut used_default_char
+    } else {
+        null_mut()
+    };
     unsafe {
         match WideCharToMultiByte(
             code_page,
@@ -105,159 +253,88 @@ fn wide_char_to_multi_byte<'a>(
             wc_bytes
                 .len()
                 .try_into()
-                .map_err(|_| ERROR_INVALID_PARAMETER)?,
+                .map_err(|_| ConvertError::TryFromIntError)?,
             mb_bytes.as_mut_ptr() as *mut i8,
-            mb_bytes
-                .len()
-                .try_into()
-                .map_err(|_| ERROR_INVALID_PARAMETER)?,
-            dc as *const i8,
-            used_default_char.into().map_or(null_mut(), |x| x),
+            if query_required_len {
+                0
+            } else {
+                mb_bytes
+                    .len()
+                    .try_into()
+                    .map_err(|_| ConvertError::TryFromIntError)?
+            },
+            null(),
+            ptr_udc,
         ) {
-            0 => Err(GetLastError()),
-            x => Ok(x as usize),
+            0 => match GetLastError() {
+                ERROR_INVALID_PARAMETER => {
+                    Err(ConvertError::InvalidCodePage(code_page))
+                }
+                ERROR_INSUFFICIENT_BUFFER => {
+                    Err(ConvertError::InsufficientBuffer)
+                }
+                ERROR_NO_UNICODE_TRANSLATION => {
+                    Err(ConvertError::ConvertToAnsiError)
+                }
+                e => Err(ConvertError::OsError(e)),
+            },
+            x => Ok((x as usize, used_default_char != 0)),
         }
     }
 }
 
-#[allow(clippy::uninit_vec)]
+#[cfg(feature = "std")]
 pub(crate) fn wide_char_to_multi_byte_wrap(
     code_page: UINT,
     wc_flags: DWORD,
     x: &[u16],
-    used_default_char: bool,
-) -> OsResult<Vec<u8>> {
+    query_used_default_char: bool,
+) -> ConvertResult<(Vec<u8>, bool)> {
     let x = if x.is_empty() { &[0] } else { x };
-    let l = x.len() * 4;
+
+    let l = x.len().checked_mul(2).unwrap_or(x.len());
     let mut ret: Vec<u8> = Vec::with_capacity(l);
-    unsafe {
-        ret.set_len(l);
-    }
-    let mut udc_flag = 0;
-    let udc = if used_default_char {
-        Some(&mut udc_flag)
-    } else {
-        None
-    };
+    let r = ret.spare_capacity_mut();
 
     match wide_char_to_multi_byte(
         code_page,
         wc_flags,
         x,
-        ret.as_mut_slice(),
-        None,
-        udc,
+        r,
+        false,
+        query_used_default_char,
     ) {
-        Ok(l2) => {
-            if udc_flag != 0 {
-                return Err(ERROR_NO_UNICODE_TRANSLATION);
-            }
+        Ok((l2, used_default_char)) => {
             unsafe {
                 ret.set_len(l2);
             }
-            Ok(ret)
+            Ok((ret, used_default_char))
         }
-        Err(ERROR_INSUFFICIENT_BUFFER) => {
-            #[cfg(feature = "debug_insufficient_buffer")]
-            {
-                println!("WCTMB: ERROR_INSUFFICIENT_BUFFER returned"); // for debug
-            }
-            wide_char_to_multi_byte2(code_page, wc_flags, x, used_default_char)
-        }
-        Err(x) => Err(x),
-    }
-}
-
-/// Gets the required buffer size and gets a multi-byte string.
-#[inline]
-#[allow(clippy::uninit_vec)]
-pub(crate) fn wide_char_to_multi_byte2(
-    code_page: UINT,
-    wc_flags: DWORD,
-    x: &[u16],
-    used_default_char: bool,
-) -> OsResult<Vec<u8>> {
-    // get the required buffer size.
-    let l =
-        wide_char_to_multi_byte(code_page, wc_flags, x, &mut [], None, None)?;
-    let mut ret: Vec<u8> = Vec::with_capacity(l);
-    unsafe {
-        ret.set_len(l);
-    }
-    let mut udc_flag = 0;
-    let udc = if used_default_char {
-        Some(&mut udc_flag)
-    } else {
-        None
-    };
-
-    let l2 = wide_char_to_multi_byte(
-        code_page,
-        wc_flags,
-        x,
-        ret.as_mut_slice(),
-        None,
-        udc,
-    )?;
-    if udc_flag != 0 {
-        return Err(ERROR_NO_UNICODE_TRANSLATION);
-    }
-    assert_eq!(l, l2);
-    Ok(ret)
-}
-
-#[allow(clippy::uninit_vec)]
-fn multi_byte_to_wide_char_wrap(
-    code_page: UINT,
-    mb_flags: DWORD,
-    x: &[u8],
-) -> OsResult<Vec<u16>> {
-    let x = if x.is_empty() { &[0x00] } else { x };
-    let l = x.len();
-    let mut ret: Vec<u16> = Vec::with_capacity(l);
-    unsafe {
-        ret.set_len(l);
-    }
-
-    match multi_byte_to_wide_char(code_page, mb_flags, x, ret.as_mut_slice()) {
-        Ok(l2) => {
+        Err(ConvertError::InsufficientBuffer) => {
+            let (len, _) = wide_char_to_multi_byte(
+                code_page,
+                wc_flags,
+                x,
+                r,
+                true,
+                query_used_default_char,
+            )?;
+            ret.reserve_exact(len - ret.len());
+            let r = ret.spare_capacity_mut();
+            let (len2, used_default_char) = wide_char_to_multi_byte(
+                code_page,
+                wc_flags,
+                x,
+                r,
+                false,
+                query_used_default_char,
+            )?;
+            assert_eq!(len, len2);
             unsafe {
-                ret.set_len(l2);
+                ret.set_len(len2);
             }
-            Ok(ret)
+            Ok((ret, used_default_char))
         }
-        Err(ERROR_INSUFFICIENT_BUFFER) => {
-            #[cfg(feature = "debug_insufficient_buffer")]
-            {
-                println!("MBTWC: ERROR_INSUFFICIENT_BUFFER returned"); // for debug
-            }
-            multi_byte_to_wide_char2(code_page, mb_flags, x)
-        }
-        Err(x) => Err(x),
+        Err(e) => Err(e),
     }
-}
-
-/// Gets the required buffer size and gets a wide string.
-#[inline]
-#[allow(clippy::uninit_vec)]
-fn multi_byte_to_wide_char2(
-    code_page: UINT,
-    mb_flags: DWORD,
-    x: &[u8],
-) -> OsResult<Vec<u16>> {
-    // get the required buffer size.
-    let l = multi_byte_to_wide_char(code_page, mb_flags, x, &mut [])?;
-    let mut ret: Vec<u16> = Vec::with_capacity(l);
-    unsafe {
-        ret.set_len(l);
-
-        let l2 = multi_byte_to_wide_char(
-            code_page,
-            mb_flags,
-            x,
-            ret.as_mut_slice(),
-        )?;
-        assert_eq!(l, l2);
-    }
-    Ok(ret)
 }

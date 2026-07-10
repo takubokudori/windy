@@ -1,14 +1,15 @@
 [package]
 name = "windy"
-version = "0.3.1"
+version = "0.4.0"
 authors = ["takubokudori <takubokudori@gmail.com>"]
 license = "MIT OR Apache-2.0"
 homepage = "https://github.com/takubokudori/windy"
 repository = "https://github.com/takubokudori/windy"
 keywords = ["windows", "ansi", "unicode", "multibyte"]
-description = "A Windows strings library that supports AString (ANSI string) and WString (Unicode string)"
+description = "A Windows strings library that supports ANSI string and wide string"
 readme = "README.md"
 edition = "2024"
+rust-version = "1.95.0"
 
 exclude = [
     ".gitignore",
@@ -28,5 +29,4 @@ harness = false
 
 [features]
 default = ["std"]
-debug_insufficient_buffer = []
 std = []

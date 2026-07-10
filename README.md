@@ -3,65 +3,47 @@
 [![crates.io](https://img.shields.io/crates/v/windy.svg)](https://crates.io/crates/windy)
 [![docs.rs](https://docs.rs/windy/badge.svg)](https://docs.rs/windy)
 
-A Windows strings library that supports AString (ANSI string) and WString (Unicode string).
+Windows string library for ANSI strings and wide strings.
 
 # Features
 
-- ANSI string(AString)
-- Wide string(WString)
-- AnsiString(ANSI_STRING)
-- UnicodeString(UNICODE_STRING)
-- Interconversion between AString, WString and String.
-- no_std support
-- Macros support
+- Owned ANSI strings: `AString`.
+- Owned wide strings: `WString`.
+- Borrowed ANSI strings: `AStr`.
+- Borrowed wide strings: `WStr`.
+- Dynamically-code-paged ANSI strings: `DAString` and `DAStr`.
+- Windows `ANSI_STRING` and `UNICODE_STRING` wrappers.
+- Conversions between ANSI strings, wide strings, and UTF-8 `String` values.
+- `no_std` support for borrowed string types.
 
 # Installation
 
-Add the following lines to your Cargo.toml:
+Add this crate to `Cargo.toml`:
 
 ```toml
 [dependencies]
-windy = "0.3.1"
-```
-
-# Example
-
-An example of parsing the outputs of cmd.exe.
-
-```rust
-use windy::AString;
-use std::process::Command;
-
-fn main() {
-    let o = Command::new("cmd")
-        .args(&["/c", "ThisCommandDoesNotExist"])
-        .output().unwrap();
-    let (stdout, stderr) = unsafe {
-        (
-            AString::new_unchecked(o.stdout),
-            AString::new_unchecked(o.stderr)
-        )
-    };
-    println!("stdout: {:?}", stdout);
-    println!("stderr: {:?}", stderr);
-}
+windy = "0.4.0"
 ```
 
 # no_std support
 
-If you don't want to use std, use `--no-default-features`.
+Disable default features to build without `std`:
 
-AString and WString are not available when no_std.
+```text
+--no-default-features
+```
 
-# Macros support
+Owned string types are available only with the `std` feature.
 
-[windy-macros](https://github.com/takubokudori/windy-macros) to convert a UTF-8 string to WString or AString at compile
-time.
+# Macros
+
+[`windy-macros`](https://github.com/takubokudori/windy-macros) crate provides compile-time conversion from
+UTF-8 string literals to ANSI strings or wide strings.
 
 ```toml
 [dependencies]
-windy = "0.3.1"
-windy-macros = "0.2.0"
+windy = "0.4.0"
+windy-macros = "0.3.0"
 ```
 
 ## Example
@@ -73,7 +55,7 @@ use windy_macros::wstr;
 
 #[allow(non_snake_case)]
 #[link(name = "user32")]
-extern "system" {
+unsafe extern "system" {
     pub fn MessageBoxW(
         hWnd: *mut c_void,
         lpText: *const u16,
@@ -82,11 +64,13 @@ extern "system" {
     ) -> i32;
 }
 
+const MB_OK: u32 = 0;
+
 fn main() {
     let text: &WStr = wstr!("World");
     let caption: &WStr = wstr!("CaptionW");
     unsafe {
-        MessageBoxW(0 as _, text.as_ptr(), caption.as_ptr(), 0);
+        MessageBoxW(std::ptr::null_mut(), text.as_ptr(), caption.as_ptr(), MB_OK);
     }
 }
 ```

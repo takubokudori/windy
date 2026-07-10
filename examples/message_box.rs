@@ -1,9 +1,12 @@
 // Copyright takubokudori.
 // This source code is licensed under the MIT or Apache-2.0 license.
+#![allow(dead_code)]
 #[cfg(feature = "std")]
 use core::ffi::c_void;
 #[cfg(feature = "std")]
 use windy::*;
+
+const MB_OK: u32 = 0;
 
 #[allow(non_snake_case)]
 #[cfg(feature = "std")]
@@ -26,19 +29,29 @@ unsafe extern "system" {
 
 #[cfg(feature = "std")]
 fn message_box_a() {
-    let text = AString::from_str("Hello").unwrap();
-    let caption = AString::from_str("CaptionA").unwrap();
+    let text = ACPString::from_utf8("Hello").unwrap();
+    let caption = ACPString::from_utf8("CaptionA").unwrap();
     unsafe {
-        MessageBoxA(0 as _, text.as_ptr(), caption.as_ptr(), 0);
+        MessageBoxA(
+            std::ptr::null_mut(),
+            text.as_ptr(),
+            caption.as_ptr(),
+            MB_OK,
+        );
     }
 }
 
 #[cfg(feature = "std")]
 fn message_box_w() {
-    let text = WString::from_str("World").unwrap();
-    let caption = WString::from_str("CaptionW").unwrap();
+    let text = WString::from_utf8("World").unwrap();
+    let caption = WString::from_utf8("CaptionW").unwrap();
     unsafe {
-        MessageBoxW(0 as _, text.as_ptr(), caption.as_ptr(), 0);
+        MessageBoxW(
+            std::ptr::null_mut(),
+            text.as_ptr(),
+            caption.as_ptr(),
+            MB_OK,
+        );
     }
 }
 
